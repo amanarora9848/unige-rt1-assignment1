@@ -1,0 +1,5 @@
+mercurial==5.3.1
+numpy==1.16.5
+pygame==1.9.6
+pypybox2d==2.1.post331
+PyYAML==5.4.1
