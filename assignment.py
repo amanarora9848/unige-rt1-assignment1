@@ -12,12 +12,13 @@ a_th = 2.0
 """ float: Threshold for the control of the orientation """
 
 silver_th = 0.4
-gold_th = 0.6 # Threshold for gold, slightly more.
+gold_th = 0.6  # Threshold for gold, slightly more.
 """ float: Thresholds for the control of the linear distance to a silver or gold token """
 
 
 R = Robot()
 """ Instance of the class Robot"""
+
 
 displaced_tokens = {
     'silver': [],
@@ -28,15 +29,15 @@ dict: keys depicting the token color, with values of 'list' type,
 containing the token codes which have been dealt with
 """
 
-engage = True # starting with silver who uses this flag first, and then is given to gold
+engage = True  # starting with silver who uses this flag first, and then is given to gold
 
 
 def drive(speed, seconds):
     """
     Function for setting a linear velocity
-    
+
     Args: speed (int): the speed of the wheels
-	  seconds (int): the time interval
+          seconds (int): the time interval
     """
     R.motors[0].m0.power = speed
     R.motors[0].m1.power = speed
@@ -44,18 +45,20 @@ def drive(speed, seconds):
     R.motors[0].m0.power = 0
     R.motors[0].m1.power = 0
 
+
 def turn(speed, seconds):
     """
     Function for setting an angular velocity
-    
+
     Args: speed (int): the speed of the wheels
-	  seconds (int): the time interval
+          seconds (int): the time interval
     """
     R.motors[0].m0.power = speed
     R.motors[0].m1.power = -speed
     time.sleep(seconds)
     R.motors[0].m0.power = 0
     R.motors[0].m1.power = 0
+
 
 def find_token_silver():
     """
@@ -74,9 +77,10 @@ def find_token_silver():
             rot_y = token.rot_y
             current_token_code = token.info.code
     if dist == 100:
-	    return -1, -1, -1, "none"
+        return -1, -1, -1, "none"
     else:
-   	    return dist, rot_y, current_token_code, MARKER_TOKEN_SILVER
+        return dist, rot_y, current_token_code, MARKER_TOKEN_SILVER
+
 
 def find_token_gold():
     """
@@ -99,6 +103,7 @@ def find_token_gold():
     else:
         return dist, rot_y, current_token_code, MARKER_TOKEN_GOLD
 
+
 def search_and_drive(flag):
     """
     The brain and actuators of the robot.
@@ -116,53 +121,64 @@ def search_and_drive(flag):
     else:
         distance_obj, rot_obj, token_code, token_color = find_token_gold()
         distance_threshold = gold_th
-    
-    # If no token is found, turn and continue search
+
+    # if no token is found, turn and continue search
     if token_code == -1:
         print("No", token_color, "seen. Searching...")
         turn(10, 0.3)
-    # If all tokens have been dealt with (if task is complete), rejoice and exit
+
+    # if all tokens have been dealt with (if task is complete), rejoice and exit
     elif len(displaced_tokens['silver']) == 6 and len(displaced_tokens['gold']) == 6:
         turn(100, 2)
         print("Job is done, sir.")
         exit()
-    # Check if the given token is already there in both gold and silver keys of displaced_token dict
-    # This is useful because there may be tokens with same code but different colors
+
+    # ignore if the given token is already there in both gold and silver keys of displaced_token dict
     elif token_code in displaced_tokens['silver'] and token_code in displaced_tokens['gold']:
-        print("Already moved token:", token_code, "- Searching the next", token_color, "...")
+        print("Already moved token:", token_code,
+              "- Searching the next", token_color, "...")
         turn(10, 0.3)
-    # If silver token already displaced, don't touch it again, continue search
-    elif flag and token_code in displaced_tokens['silver']:
-        print("Already moved silver token:", token_code, "- Searching the next", token_color, "...")
+
+    # if a (silver) or (gold) token has already been displaced, don't touch it again, continue search
+    # This is useful because there may be tokens with same code but different colors
+    elif ((flag and token_code in displaced_tokens['silver']) or
+            (not flag and token_code in displaced_tokens['gold'])):
+        print("Already moved token:", token_code,
+              "- Searching the next", token_color, "...")
         turn(10, 0.3)
-    # If gold token already displaced, don't touch it again, continue search
-    elif not flag and token_code in displaced_tokens['gold']:
-        print("Already moved gold token:", token_code, "- Searching the next", token_color, "...")
-        turn(10, 0.3)
+
     else:
-        print("Unmoved", token_color, ":", token_code, "| distance = ", distance_obj, "| orientation = ", rot_obj)
+        print("Unmoved", token_color, ":", token_code, "| distance = ",
+              distance_obj, "| orientation = ", rot_obj)
         # if robot is really close and ready to grab (or release) the token
         if distance_obj < distance_threshold:
             global engage
-            # if searching for silver token and it's close (upto silver_th - threshold for silver), grab it
+            # if searching for silver token and it's close (upto silver_th i.e. silver threshold), grab it
             if engage:
                 if R.grab():
+                    # Add the token code of the silver token to displaced_tokens dict
+                    # so that it's not touched again
                     displaced_tokens['silver'].append(token_code)
-            # if searching for gold token and it's close (upto gold_th - threshold for gold), release the grabbed silver token
+            # if searching for gold token and it's close (upto gold_th i.e. gold threshold)
+            # release the grabbed silver token
             else:
                 if R.release():
+                    # Add the token code of the silver token to displaced_tokens dict
+                    #  so that it's not searched for again
                     displaced_tokens['gold'].append(token_code)
+                    # Move back a bit
                     drive(-15, 1)
                     print('Backing up gracefully.')
             # flip the engage flag upon grabbing or releasing of silver token
             engage = not engage
-        # Drive robot towards the token
+        # drive robot towards the token
         if rot_obj > a_th:
             turn(10, 0.1)
         elif rot_obj < -a_th:
             turn(-10, 0.1)
         elif -a_th <= rot_obj <= a_th:
             drive(50, 0.2)
+
 
 while(1):
     # Commence operation
