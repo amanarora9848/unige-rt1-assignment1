@@ -164,7 +164,7 @@ def drive_and_drop(flag):
                     print('Backing up a bit, gracefully.')
             # flip the engage flag upon grabbing or releasing of silver token
             engage = not engage
-            
+
         # drive robot towards the token
         if rot_obj > a_th:
             turn(10, 0.1)
@@ -172,7 +172,6 @@ def drive_and_drop(flag):
             turn(-10, 0.1)
         elif -a_th <= rot_obj <= a_th:
             drive(70, 0.15)
-
 
 
 while(1):

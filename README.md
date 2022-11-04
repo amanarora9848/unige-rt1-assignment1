@@ -157,6 +157,7 @@ function LOCATE_TOKEN(selector)
                 set orientation to observed_orientation
                 set token_code to retrieved token code
             ENDIF
+        ENDFOR
         IF dist = 100
             RETURN -1, -1, -1, "token", -1
         ELSE
@@ -170,6 +171,7 @@ function LOCATE_TOKEN(selector)
                 set orientation to observed_orientation
                 set token_code to retrieved token code
             ENDIF
+        ENDFOR
         IF dist = 100
             RETURN -1, -1, -1, "token", -1
         ELSE
@@ -223,6 +225,17 @@ procedure DRIVE_AND_DROP(selector)
     ENDIF
 ```
 
+```
+To implement the given task:
+
+WHILE True
+    DRIVE_AND_DROP(selector)
+```
 ### Possible Improvements
+
+- For the case of a silver obstacle in the path of the robot while it has already grabbed a silver token, logic to go around it can be written
+- User input to set the driving and turning speed of the robot can be accepted and integrated into the code
+- There could be more precision in how close to the gold token does the robot drop the silver token, and if it maneuvers in a way to avoid moving the gold token at all
+- The current code logic could be made even simpler
 
 [sr-api]: https://studentrobotics.org/docs/programming/sr/
