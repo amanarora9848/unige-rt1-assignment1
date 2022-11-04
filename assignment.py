@@ -102,7 +102,7 @@ def locate_token(flag):
             return dist, rot_y, current_token_code, MARKER_TOKEN_GOLD, distance_threshold
 
 
-def search_and_drive(flag):
+def drive_and_drop(flag):
     """
     The brain and actuators of the robot.
     This function drives the robot in the direction of closest silver token,
@@ -164,6 +164,7 @@ def search_and_drive(flag):
                     print('Backing up a bit, gracefully.')
             # flip the engage flag upon grabbing or releasing of silver token
             engage = not engage
+            
         # drive robot towards the token
         if rot_obj > a_th:
             turn(10, 0.1)
@@ -176,4 +177,4 @@ def search_and_drive(flag):
 
 while(1):
     # Commence operation
-    search_and_drive(engage)
+    drive_and_drop(engage)

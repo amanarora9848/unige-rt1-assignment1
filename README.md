@@ -1,5 +1,5 @@
 Research Track 1 - Assignment 1 (UniGe)
-================================
+=======================================
 
 ## About Python Robotics Simulator
 This is a simple, portable robot simulator developed by [Student Robotics](https://studentrobotics.org).
@@ -12,7 +12,7 @@ The simulator requires a Python 2.7 installation, the [pygame](http://pygame.org
 
 Pygame, unfortunately, can be tricky (though [not impossible](http://askubuntu.com/q/312767)) to install in virtual environments. If you are using `pip`, you might try `pip install hg+https://bitbucket.org/pygame/pygame`, or you could use your operating system's package manager. Windows users could use [Portable Python](http://portablepython.com/). PyPyBox2D and PyYAML are more forgiving, and should install just fine using `pip` or `easy_install`.
 
-Fortunately, there exists a requirements.txt file. To run the project, it is recommended to create a python2 virtualenv for the project. To do so, we first need to install virtualenv pip package, and then create a python2.7 virtualenv since the simulator is based on python2.7:
+To run the project, it is recommended to create a python2 virtualenv for the project. To do so, we first need to install virtualenv pip package, and then create a python2.7 virtualenv since the simulator is based on python2.7:
 
 ```shell
 $ pip install virtualenv
@@ -26,7 +26,7 @@ This activated the python2.7 virtualenv. To deactivate:
 $ deactivate
 ```
 
-Once in the venv, we can install the project requirements.
+Once in the venv, we can install the project requirements. Fortunately, there exists a requirements.txt file.
 ```shell
 $ pip install -r requirements.txt
 ```
@@ -118,13 +118,100 @@ for m in markers:
 
 This file is for executing the procedure for the assignment. Given the robot, the environment and the defined parameters, the task for the robot is to pick and place each nearest silver token near the nearest golden one at a given instant of time. 
 
-The robot starts with searching the silver token, which is defined when 'engage' control flag is True. Everytime the silver token is grabbed, the engage flag is inverted to search and towards the nearest gold flag. Everytime the silver token is released, the engage flag is again inverted. The function definitions and logic is defined in the pseudocode below.
+The robot starts with searching the silver token, which is defined when 'engage' control flag is True. The robot finds the nearest silver flag and moves towards it. Everytime the silver token is grabbed, the engage flag is inverted to search and move towards the nearest gold flag. Everytime the silver token is released, the engage flag is again inverted. The function definitions and logic is defined in the pseudocode below.
 
 Once the task is finished, the robot rejoices.
 
 ### Below is the pseudocode for assignment22
 ```
 Pseudocode
+
+Program to make the robot grab nearest silver token and drop near the nearest gold token, with 1 silver and 1 gold token per pair
+
+FLAG selector = True
+
+procedure DRIVE(speed, time)
+    left motor power ← speed
+    right motor power ← speed
+    sleep(time)
+    left, right motor power = 0
+
+procedure TURN(speed, time)
+    left motor power ← speed
+    right motor power ← -speed
+    sleep(time)
+    left, right motor power = 0
+
+function LOCATE_TOKEN(selector)
+    set dist to 100
+    IF wanted token is silver
+        set ideal distance_threshold for silver token
+        FOR token in observed_tokens
+            IF observed_distance < dist AND token_color is silver
+                set dist to observed_distance
+                set orientation to observed_orientation
+                set token_code to retrieved token code
+            ENDIF
+        IF dist = 100
+            RETURN -1, -1, -1, "token", -1
+        ELSE
+            RETURN dist, orientation, token_code, "silver-token", distance_threshold
+        ENDIF
+    ELSE
+        set ideal distance_threshold for gold token
+        FOR token in observed_tokens
+            IF observed_distance < dist AND token_color is gold
+                set dist to observed_distance
+                set orientation to observed_orientation
+                set token_code to retrieved token code
+            ENDIF
+        IF dist = 100
+            RETURN -1, -1, -1, "token", -1
+        ELSE
+            RETURN dist, orientation, token_code, "gold-token", distance_threshold
+        ENDIF
+    ENDIF
+
+procedure DRIVE_AND_DROP(selector)
+
+    distance, orientation, token_code, token_color, distance_threshold ← LOCATE_TOKEN(selector)
+
+    IF token_code = -1
+        TURN
+    
+    ELSE IF all tokens arranged
+        DRIVE backward
+        rotate twice
+        END EXECUTION
+
+    ELSE IF both silver and gold tokens having same token_code have been arranged
+        TURN
+
+    ELSE IF (wanted token is silver AND observed silver-token is already arranged) OR
+    (wanted token is gold AND observed gold-token is already arranged)
+        TURN
+    
+    ELSE
+        IF distance < distance threshold
+            IF wanted token is silver
+                GRAB_TOKEN()
+            ELSE
+                RELEASE_TOKEN()
+                move back a little
+            ENDIF
+            INVERT selector
+        ENDIF
+
+        IF orientation > orientation_threshold:
+            TURN right
+        ELSE IF orientation < -orientation_threshold:
+            TURN left
+        ELSE IF -orientation_threshold <= orientation <= orientation_threshold
+            DRIVE forward
+        ENDIF
+    
+    ENDIF
+
 ```
 
 [sr-api]: https://studentrobotics.org/docs/programming/sr/
