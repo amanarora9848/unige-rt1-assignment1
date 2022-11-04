@@ -12,7 +12,7 @@ a_th = 2.0
 """ float: Threshold for the control of the orientation """
 
 silver_th = 0.4
-gold_th = 0.6  # Threshold for gold, slightly more.
+gold_th = 0.65  # Threshold for gold, slightly more.
 """ float: Thresholds for the control of the linear distance to a silver or gold token """
 
 
@@ -60,51 +60,49 @@ def turn(speed, seconds):
     R.motors[0].m1.power = 0
 
 
-def find_token_silver():
+def locate_token(flag):
     """
-    Function to find the closest silver token
+    Function to find the closest silver or gold token, based on the passed control flag
 
-    Returns: distance (float): distance to closest silver token (-1 if no silver token detected)
-             orientation (float): orientation of robot wrt token (-1 if no silver token detected)
-             token code (int): silver token code (-1 if no silver token detected)
-             token color (string): retrieve the color of the token ("none" if no silver token detected)
-    """
-    dist = 100
-    current_token_code = 0
-    for token in R.see():
-        if token.dist < dist and token.info.marker_type == 'silver-token':
-            dist = token.dist
-            rot_y = token.rot_y
-            current_token_code = token.info.code
-    if dist == 100:
-        return -1, -1, -1, "none"
-    else:
-        return dist, rot_y, current_token_code, MARKER_TOKEN_SILVER
+    Args: flag(bool): If True, it is silver. If False, it is gold
 
-
-def find_token_gold():
-    """
-    Function to find the closest gold token
-
-    Returns: distance (float): distance to closest gold token (-1 if no gold token detected)
-             orientation (float): orientation of robot wrt token (-1 if no gold token detected)
-             token code (int): gold token code (-1 if no gold token detected)
-             token color (string): retrieve the color of the token ("none" if no gold token detected)
+    Returns: distance (float): distance to closest token (-1 if no token detected)
+             orientation (float): orientation of robot wrt token (-1 if no token detected)
+             token code (int): gold token code (-1 if no token detected)
+             token color (string): retrieve the color of the token ("token" if no token detected)
+             distance_threshold(float): respective threshold for closest distance, wrt token color (-1 if no token detected)
     """
     dist = 100
     current_token_code = 0
-    for token in R.see():
-        if token.dist < dist and token.info.marker_type == 'gold-token':
-            dist = token.dist
-            rot_y = token.rot_y
-            current_token_code = token.info.code
-    if dist == 100:
-        return -1, -1, -1, "none"
+
+    # if looking for silver token, set parameters
+    if flag:
+        distance_threshold = silver_th
+        for token in R.see():
+            if token.dist < dist and token.info.marker_type == 'silver-token':
+                dist = token.dist
+                rot_y = token.rot_y
+                current_token_code = token.info.code
+        if dist == 100:
+            return -1, -1, -1, "token", -1
+        else:
+            return dist, rot_y, current_token_code, MARKER_TOKEN_SILVER, distance_threshold
+
+    # if looking for gold token, set parameters
     else:
-        return dist, rot_y, current_token_code, MARKER_TOKEN_GOLD
+        distance_threshold = gold_th
+        for token in R.see():
+            if token.dist < dist and token.info.marker_type == 'gold-token':
+                dist = token.dist
+                rot_y = token.rot_y
+                current_token_code = token.info.code
+        if dist == 100:
+            return -1, -1, -1, "token", -1
+        else:
+            return dist, rot_y, current_token_code, MARKER_TOKEN_GOLD, distance_threshold
 
 
-def search_and_drive(flag):
+def drive_and_drop(flag):
     """
     The brain and actuators of the robot.
     This function drives the robot in the direction of closest silver token,
@@ -113,14 +111,8 @@ def search_and_drive(flag):
     Args: 
         flag (bool): to keep track of whether we are searching for silver or gold token
     """
-    # if looking for silver token, set parameters
-    if flag:
-        distance_obj, rot_obj, token_code, token_color = find_token_silver()
-        distance_threshold = silver_th
-    # if looking for gold token, set parameters
-    else:
-        distance_obj, rot_obj, token_code, token_color = find_token_gold()
-        distance_threshold = gold_th
+    # Set the parameters to find and move towards the nearest token
+    distance_obj, rot_obj, token_code, token_color, distance_threshold = locate_token(engage)
 
     # if no token is found, turn and continue search
     if token_code == -1:
@@ -129,6 +121,7 @@ def search_and_drive(flag):
 
     # if all tokens have been dealt with (if task is complete), rejoice and exit
     elif len(displaced_tokens['silver']) == 6 and len(displaced_tokens['gold']) == 6:
+        drive(-75, 2)
         turn(100, 2)
         print("Job is done, sir.")
         exit()
@@ -167,19 +160,20 @@ def search_and_drive(flag):
                     #  so that it's not searched for again
                     displaced_tokens['gold'].append(token_code)
                     # Move back a bit
-                    drive(-15, 1)
-                    print('Backing up gracefully.')
+                    drive(-10, 1)
+                    print('Backing up a bit, gracefully.')
             # flip the engage flag upon grabbing or releasing of silver token
             engage = not engage
+
         # drive robot towards the token
         if rot_obj > a_th:
             turn(10, 0.1)
         elif rot_obj < -a_th:
             turn(-10, 0.1)
         elif -a_th <= rot_obj <= a_th:
-            drive(50, 0.2)
+            drive(70, 0.15)
 
 
 while(1):
     # Commence operation
-    search_and_drive(engage)
+    drive_and_drop(engage)

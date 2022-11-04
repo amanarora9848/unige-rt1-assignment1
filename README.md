@@ -1,15 +1,35 @@
-Python Robotics Simulator
-================================
+Research Track 1 - Assignment 1 (UniGe)
+=======================================
 
+## About Python Robotics Simulator
 This is a simple, portable robot simulator developed by [Student Robotics](https://studentrobotics.org).
 Some of the arenas and the exercises have been modified for the Research Track I course
 
-Installing and running
+Installation
 ----------------------
 
 The simulator requires a Python 2.7 installation, the [pygame](http://pygame.org/) library, [PyPyBox2D](https://pypi.python.org/pypi/pypybox2d/2.1-r331), and [PyYAML](https://pypi.python.org/pypi/PyYAML/).
 
 Pygame, unfortunately, can be tricky (though [not impossible](http://askubuntu.com/q/312767)) to install in virtual environments. If you are using `pip`, you might try `pip install hg+https://bitbucket.org/pygame/pygame`, or you could use your operating system's package manager. Windows users could use [Portable Python](http://portablepython.com/). PyPyBox2D and PyYAML are more forgiving, and should install just fine using `pip` or `easy_install`.
+
+To run the project, it is recommended to create a python2 virtualenv for the project. To do so, we first need to install virtualenv pip package, and then create a python2.7 virtualenv since the simulator is based on python2.7:
+
+```shell
+$ pip install virtualenv
+$ cd unige-rt1-assignment1
+$ virtualenv -p /usr/bin/python2.7 .rt1project1
+$ . .rt1project1/bin/activate
+```
+
+This activated the python2.7 virtualenv. To deactivate:
+```shell
+$ deactivate
+```
+
+Once in the venv, we can install the project requirements. Fortunately, there exists a requirements.txt file.
+```shell
+$ pip install -r requirements.txt
+```
 
 ## Troubleshooting
 
@@ -20,25 +40,16 @@ On Ubuntu, this can be accomplished by:
 * Get the location. In my case this was `/usr/local/lib/python2.7/dist-packages`
 * Create symlink: `ln -s path/to/simulator/sr/robot /usr/local/lib/python2.7/dist-packages/sr/`
 
-## Exercise
+## The Exercise
 -----------------------------
 
-To run one or more scripts in the simulator, use `run.py`, passing it the file names. 
+To run one the scripts in the simulator, use `run.py`, passing it the file names.
 
-I am proposing you three exercises, with an increasing level of difficulty.
-The instruction for the three exercises can be found inside the .py files (exercise1.py, exercise2.py, exercise3.py).
-
-When done, you can run the program with:
-
-```bash
-$ python run.py exercise1.py
+```shell
+$ python run.py assigment.py
 ```
 
-You have also the solutions of the exercises (folder solutions)
-
-```bash
-$ python run.py solutions/exercise1_solution.py
-```
+![Short video of task in action](rt1assignment1.gif)
 
 Robot API
 ---------
@@ -101,5 +112,130 @@ for m in markers:
     elif m.info.marker_type == MARKER_ARENA:
         print " - Arena marker {0} is {1} metres away".format( m.info.offset, m.dist )
 ```
+
+## Working and Explanation
+
+### The main python script: assignment22.py
+
+This file is for executing the procedure for the assignment. Given the robot, the environment and the defined parameters, the task for the robot is to pick and place each nearest silver token near the nearest golden one at a given instant of time. 
+
+The robot starts with searching the silver token, which is defined when 'engage' control flag is True. The robot finds the nearest silver flag and moves towards it. Everytime the silver token is grabbed, the engage flag is inverted to search and move towards the nearest gold flag. Everytime the silver token is released, the engage flag is again inverted. The function definitions and logic is defined in the pseudocode below.
+
+Once the task is finished, the robot rejoices.
+
+### Below are the pseudocodes for the procedures and functions for assignment22
+```
+PSEUDOCODE: Program to make the robot arrange all silver-gold tokens in pairs.
+```
+```
+Procedures to drive robot around:
+
+procedure DRIVE(speed, time)
+    left motor power ← speed
+    right motor power ← speed
+    sleep(time)
+    left, right motor power ← 0
+
+procedure TURN(speed, time)
+    left motor power ← speed
+    right motor power ← -speed
+    sleep(time)
+    left, right motor power ← 0
+```
+
+```
+Function to search required coloured robot and retrieve its parameters
+
+// Value of selector = True means wanted token is silver, while False means wanted token is gold.
+function LOCATE_TOKEN(selector)
+    set dist to 100
+    IF wanted token is silver
+        set ideal distance_threshold for silver token
+        FOR token in observed_tokens
+            IF observed_distance < dist AND token_color is silver
+                set dist to observed_distance
+                set orientation to observed_orientation
+                set token_code to retrieved token code
+            ENDIF
+        ENDFOR
+        IF dist = 100
+            RETURN -1, -1, -1, "token", -1
+        ELSE
+            RETURN dist, orientation, token_code, "silver-token", distance_threshold
+        ENDIF
+    ELSE
+        set ideal distance_threshold for gold token
+        FOR token in observed_tokens
+            IF observed_distance < dist AND token_color is gold
+                set dist to observed_distance
+                set orientation to observed_orientation
+                set token_code to retrieved token code
+            ENDIF
+        ENDFOR
+        IF dist = 100
+            RETURN -1, -1, -1, "token", -1
+        ELSE
+            RETURN dist, orientation, token_code, "gold-token", distance_threshold
+        ENDIF
+    ENDIF
+```
+
+```
+Algorithm to implement the given task: 'drive and drop':
+
+procedure DRIVE_AND_DROP(selector)
+
+    distance, orientation, token_code, token_color, distance_threshold ← LOCATE_TOKEN(selector)
+
+    IF no token detected
+        TURN
+    
+    ELSE IF all tokens arranged
+        DRIVE backward
+        rotate twice
+        END EXECUTION
+
+    // This condition is useful to account for duplicate token codes for different colors
+    ELSE IF both silver and gold tokens having the same retriieved token_code have been arranged
+        TURN
+
+    ELSE IF (wanted token is silver AND observed silver-token is already arranged) OR
+                (wanted token is gold AND observed gold-token is already arranged)
+        TURN
+    
+    ELSE
+        IF distance < distance_threshold
+            IF wanted token is silver
+                GRAB_TOKEN()
+            ELSE
+                RELEASE_TOKEN()
+                move back a little
+            ENDIF
+            INVERT selector flag
+        ENDIF
+
+        IF orientation > orientation_threshold:
+            TURN right
+        ELSE IF orientation < -orientation_threshold:
+            TURN left
+        ELSE IF -orientation_threshold <= orientation <= orientation_threshold
+            DRIVE forward
+        ENDIF
+    
+    ENDIF
+```
+
+```
+To implement the given task:
+
+WHILE True
+    DRIVE_AND_DROP(selector)
+```
+### Possible Improvements
+
+- For the case of a silver obstacle in the path of the robot while it has already grabbed a silver token, logic to go around it can be written
+- User input to set the driving and turning speed of the robot can be accepted and integrated into the code
+- There could be more precision in how close to the gold token does the robot drop the silver token, and if it maneuvers in a way to avoid moving the gold token at all
+- The current code logic could be made even simpler
 
 [sr-api]: https://studentrobotics.org/docs/programming/sr/
