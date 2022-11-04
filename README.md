@@ -49,6 +49,7 @@ To run one the scripts in the simulator, use `run.py`, passing it the file names
 $ python run.py assigment.py
 ```
 
+![Short video of task in action](rt1assignment1.gif)
 
 Robot API
 ---------
@@ -193,7 +194,7 @@ procedure DRIVE_AND_DROP(selector)
         END EXECUTION
 
     // This condition is useful to account for duplicate token codes for different colors
-    ELSE IF both silver and gold tokens having same token_code have been arranged
+    ELSE IF both silver and gold tokens having the same retriieved token_code have been arranged
         TURN
 
     ELSE IF (wanted token is silver AND observed silver-token is already arranged) OR
@@ -221,5 +222,7 @@ procedure DRIVE_AND_DROP(selector)
     
     ENDIF
 ```
+
+### Possible Improvements
 
 [sr-api]: https://studentrobotics.org/docs/programming/sr/
