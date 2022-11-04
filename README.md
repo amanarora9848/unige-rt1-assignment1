@@ -1,15 +1,35 @@
-Python Robotics Simulator
+Research Track 1 - Assignment 1 (UniGe)
 ================================
 
+## About Python Robotics Simulator
 This is a simple, portable robot simulator developed by [Student Robotics](https://studentrobotics.org).
 Some of the arenas and the exercises have been modified for the Research Track I course
 
-Installing and running
+Installation
 ----------------------
 
 The simulator requires a Python 2.7 installation, the [pygame](http://pygame.org/) library, [PyPyBox2D](https://pypi.python.org/pypi/pypybox2d/2.1-r331), and [PyYAML](https://pypi.python.org/pypi/PyYAML/).
 
 Pygame, unfortunately, can be tricky (though [not impossible](http://askubuntu.com/q/312767)) to install in virtual environments. If you are using `pip`, you might try `pip install hg+https://bitbucket.org/pygame/pygame`, or you could use your operating system's package manager. Windows users could use [Portable Python](http://portablepython.com/). PyPyBox2D and PyYAML are more forgiving, and should install just fine using `pip` or `easy_install`.
+
+Fortunately, there exists a requirements.txt file. To run the project, it is recommended to create a python2 virtualenv for the project. To do so, we first need to install virtualenv pip package, and then create a python2.7 virtualenv since the simulator is based on python2.7:
+
+```shell
+$ pip install virtualenv
+$ cd unige-rt1-assignment1
+$ virtualenv -p /usr/bin/python2.7 .rt1project1
+$ . .rt1project1/bin/activate
+```
+
+This activated the python2.7 virtualenv. To deactivate:
+```shell
+$ deactivate
+```
+
+Once in the venv, we can install the project requirements.
+```shell
+$ pip install -r requirements.txt
+```
 
 ## Troubleshooting
 
@@ -20,25 +40,15 @@ On Ubuntu, this can be accomplished by:
 * Get the location. In my case this was `/usr/local/lib/python2.7/dist-packages`
 * Create symlink: `ln -s path/to/simulator/sr/robot /usr/local/lib/python2.7/dist-packages/sr/`
 
-## Exercise
+## The Exercise
 -----------------------------
 
-To run one or more scripts in the simulator, use `run.py`, passing it the file names. 
+To run one the scripts in the simulator, use `run.py`, passing it the file names.
 
-I am proposing you three exercises, with an increasing level of difficulty.
-The instruction for the three exercises can be found inside the .py files (exercise1.py, exercise2.py, exercise3.py).
-
-When done, you can run the program with:
-
-```bash
-$ python run.py exercise1.py
+```shell
+$ python run.py assigment.py
 ```
 
-You have also the solutions of the exercises (folder solutions)
-
-```bash
-$ python run.py solutions/exercise1_solution.py
-```
 
 Robot API
 ---------
@@ -100,6 +110,21 @@ for m in markers:
         print " - Token {0} is {1} metres away".format( m.info.offset, m.dist )
     elif m.info.marker_type == MARKER_ARENA:
         print " - Arena marker {0} is {1} metres away".format( m.info.offset, m.dist )
+```
+
+## Working and Explanation
+
+### The main python script: assignment22.py
+
+This file is for executing the procedure for the assignment. Given the robot, the environment and the defined parameters, the task for the robot is to pick and place each nearest silver token near the nearest golden one at a given instant of time. 
+
+The robot starts with searching the silver token, which is defined when 'engage' control flag is True. Everytime the silver token is grabbed, the engage flag is inverted to search and towards the nearest gold flag. Everytime the silver token is released, the engage flag is again inverted. The function definitions and logic is defined in the pseudocode below.
+
+Once the task is finished, the robot rejoices.
+
+### Below is the pseudocode for assignment22
+```
+Pseudocode
 ```
 
 [sr-api]: https://studentrobotics.org/docs/programming/sr/
