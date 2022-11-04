@@ -124,11 +124,9 @@ Once the task is finished, the robot rejoices.
 
 ### Below is the pseudocode for assignment22
 ```
-Pseudocode
+PSEUDOCODE: Program to make the robot grab nearest silver token and drop near the nearest gold token, with 1 silver and 1 gold token per pair
 
-Program to make the robot grab nearest silver token and drop near the nearest gold token, with 1 silver and 1 gold token per pair
-
-FLAG selector = True
+FLAG selector ← True
 
 procedure DRIVE(speed, time)
     left motor power ← speed
@@ -199,7 +197,7 @@ procedure DRIVE_AND_DROP(selector)
                 RELEASE_TOKEN()
                 move back a little
             ENDIF
-            INVERT selector
+            INVERT selector flag
         ENDIF
 
         IF orientation > orientation_threshold:
@@ -211,6 +209,9 @@ procedure DRIVE_AND_DROP(selector)
         ENDIF
     
     ENDIF
+
+WHILE True:
+    DRIVE_AND_DROP(selector)
 
 ```
 
