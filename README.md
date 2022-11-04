@@ -122,24 +122,30 @@ The robot starts with searching the silver token, which is defined when 'engage'
 
 Once the task is finished, the robot rejoices.
 
-### Below is the pseudocode for assignment22
+### Below are the pseudocodes for the procedures and functions for assignment22
 ```
-PSEUDOCODE: Program to make the robot grab nearest silver token and drop near the nearest gold token, with 1 silver and 1 gold token per pair
-
-FLAG selector ← True
+PSEUDOCODE: Program to make the robot arrange all silver-gold tokens in pairs.
+```
+```
+Procedures to drive robot around:
 
 procedure DRIVE(speed, time)
     left motor power ← speed
     right motor power ← speed
     sleep(time)
-    left, right motor power = 0
+    left, right motor power ← 0
 
 procedure TURN(speed, time)
     left motor power ← speed
     right motor power ← -speed
     sleep(time)
-    left, right motor power = 0
+    left, right motor power ← 0
+```
 
+```
+Function to search required coloured robot and retrieve its parameters
+
+// Value of selector = True means wanted token is silver, while False means wanted token is gold.
 function LOCATE_TOKEN(selector)
     set dist to 100
     IF wanted token is silver
@@ -169,12 +175,16 @@ function LOCATE_TOKEN(selector)
             RETURN dist, orientation, token_code, "gold-token", distance_threshold
         ENDIF
     ENDIF
+```
+
+```
+Algorithm to implement the given task: 'drive and drop':
 
 procedure DRIVE_AND_DROP(selector)
 
     distance, orientation, token_code, token_color, distance_threshold ← LOCATE_TOKEN(selector)
 
-    IF token_code = -1
+    IF no token detected
         TURN
     
     ELSE IF all tokens arranged
@@ -182,15 +192,16 @@ procedure DRIVE_AND_DROP(selector)
         rotate twice
         END EXECUTION
 
+    // This condition is useful to account for duplicate token codes for different colors
     ELSE IF both silver and gold tokens having same token_code have been arranged
         TURN
 
     ELSE IF (wanted token is silver AND observed silver-token is already arranged) OR
-    (wanted token is gold AND observed gold-token is already arranged)
+                (wanted token is gold AND observed gold-token is already arranged)
         TURN
     
     ELSE
-        IF distance < distance threshold
+        IF distance < distance_threshold
             IF wanted token is silver
                 GRAB_TOKEN()
             ELSE
@@ -209,10 +220,6 @@ procedure DRIVE_AND_DROP(selector)
         ENDIF
     
     ENDIF
-
-WHILE True:
-    DRIVE_AND_DROP(selector)
-
 ```
 
 [sr-api]: https://studentrobotics.org/docs/programming/sr/
