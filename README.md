@@ -16,6 +16,7 @@ To run the project, it is recommended to create a python2 virtualenv for the pro
 
 ```shell
 $ pip install virtualenv
+$ git clone https://github.com/amanarora9848/unige-rt1-assignment1.git
 $ cd unige-rt1-assignment1
 $ virtualenv -p /usr/bin/python2.7 .rt1project1
 $ . .rt1project1/bin/activate
@@ -43,7 +44,7 @@ On Ubuntu, this can be accomplished by:
 ## The Exercise
 -----------------------------
 
-To run one the scripts in the simulator, use `run.py`, passing it the file names.
+To run the scripts in the simulator, use `run.py`, passing to it the file names.
 
 ```shell
 $ python run.py assigment.py
