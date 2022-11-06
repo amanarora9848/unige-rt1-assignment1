@@ -200,11 +200,11 @@ procedure DRIVE_AND_DROP(SELECTOR)
         PRINT "Task Completed"
         END EXECUTION
 
-    // This condition is useful to account for duplicate token codes for different colors
+    //Condition useful to account for duplicate token codes for different colors, both already arranged
     else if token_code in SILVER_ARRANGED AND token_code in GOLD_ARRANGED
         TURN_ROBOT //continue searching
 
-    // IF token of arranged code found and is of same color (useful in case of duplicate token codes for different colors)
+    //If token of arranged code found and is of same color (useful in case of duplicate token codes for different colors)
     else if (SELECTOR AND token_code in SILVER_ARRANGED) OR
                 (NOT SELECTOR AND token_code in GOLD_ARRANGED)
         TURN_ROBOT //continue searching
