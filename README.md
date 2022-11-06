@@ -127,7 +127,7 @@ Once the task is finished, the robot rejoices.
 ```
 PSEUDOCODE: Program to make the robot arrange all silver-gold tokens in pairs.
 ```
-```
+<!-- ```
 Procedures to drive robot around:
 
 procedure DRIVE(speed, time)
@@ -141,86 +141,95 @@ procedure TURN(speed, time)
     right motor power ← -speed
     sleep(time)
     left, right motor power ← 0
-```
+``` -->
 
 ```
 Function to search required coloured robot and retrieve its parameters
+SELECTOR //BOOLEAN type, True means wanted token is silver, while False means wanted token is gold.
 
-// Value of selector = True means wanted token is silver, while False means wanted token is gold.
-function LOCATE_TOKEN(selector)
-    set dist to 100
-    IF wanted token is silver
-        set ideal distance_threshold for silver token
-        FOR token in observed_tokens
-            IF observed_distance < dist AND token_color is silver
+function LOCATE_TOKEN(SELECTOR)
+    set dist to 100 //Maximum distance after which token not detected
+    if SELECTOR //wanted token is silver
+        set distance_threshold to distance_threshold_for_silver
+        foreach TOKEN in observed_tokens
+            if observed_distance < dist AND observed_token_color is silver
                 set dist to observed_distance
                 set orientation to observed_orientation
-                set token_code to retrieved token code
-            ENDIF
-        ENDFOR
-        IF dist = 100
-            RETURN -1, -1, -1, "token", -1
-        ELSE
+                set token_code to observed_token_code
+            endif
+        endfor
+        if dist = 100 //dist not updated
+            return default values for no wanted token detected
+        else
             RETURN dist, orientation, token_code, "silver-token", distance_threshold
-        ENDIF
-    ELSE
-        set ideal distance_threshold for gold token
-        FOR token in observed_tokens
-            IF observed_distance < dist AND token_color is gold
+        endif
+    else //wanted token is gold
+        set distance_threshold to distance_threshold_for_gold
+        foreach TOKEN in observed_tokens
+            if observed_distance < dist AND observed_token_color is gold
                 set dist to observed_distance
                 set orientation to observed_orientation
-                set token_code to retrieved token code
-            ENDIF
-        ENDFOR
-        IF dist = 100
-            RETURN -1, -1, -1, "token", -1
-        ELSE
+                set token_code to observed_token_code
+            endif
+        endfor
+        if dist = 100 //dist not updated
+            return default values for no wanted token detected
+        else
             RETURN dist, orientation, token_code, "gold-token", distance_threshold
-        ENDIF
-    ENDIF
+        endif
+    endif
 ```
 
 ```
 Algorithm to implement the given task: 'drive and drop':
 
-procedure DRIVE_AND_DROP(selector)
+SELECTOR //BOOLEAN, True means wanted token is silver, False means wanted token is gold
+SILVER_ARRANGED //LIST containing silver tokens already arranged or moved
+GOLD_ARRANGED //LIST containing gold tokens already arranged or moved
 
-    distance, orientation, token_code, token_color, distance_threshold ← LOCATE_TOKEN(selector)
+procedure DRIVE_AND_DROP(SELECTOR)
 
-    IF no token detected
-        TURN
+    distance, orientation, token_code, token_color, distance_threshold ← LOCATE_TOKEN(SELECTOR)
+
+    if no token detected
+        TURN_ROBOT //continue searching
     
-    ELSE IF all tokens arranged
-        DRIVE backward
-        rotate twice
+    else if all tokens arranged
+        DRIVE_ROBOT backward
+        TURN_ROBOT for 2 rotations
+        PRINT "Task Completed"
         END EXECUTION
 
     // This condition is useful to account for duplicate token codes for different colors
-    ELSE IF both silver and gold tokens having the same retriieved token_code have been arranged
-        TURN
+    else if token_code in SILVER_ARRANGED AND token_code in GOLD_ARRANGED
+        TURN_ROBOT //continue searching
 
-    ELSE IF (wanted token is silver AND observed silver-token is already arranged) OR
-                (wanted token is gold AND observed gold-token is already arranged)
-        TURN
+    // IF token of arranged code found and is of same color (useful in case of duplicate token codes for different colors)
+    else if (SELECTOR AND token_code in SILVER_ARRANGED) OR
+                (NOT SELECTOR AND token_code in GOLD_ARRANGED)
+        TURN_ROBOT //continue searching
     
-    ELSE
-        IF distance < distance_threshold
-            IF wanted token is silver
+    else
+        if distance < distance_threshold
+            if SELECTOR //wanted token is silver
                 GRAB_TOKEN()
-            ELSE
+                add token to SILVER_ARRANGED
+            else //wanted token is gold
                 RELEASE_TOKEN()
-                move back a little
-            ENDIF
-            INVERT selector flag
-        ENDIF
+                add token to GOLD_ARRANGED
+                DRIVE_ROBOT backwards
+            endif
+            INVERT SELECTOR
+        endif
 
-        IF orientation > orientation_threshold:
-            TURN right
-        ELSE IF orientation < -orientation_threshold:
-            TURN left
-        ELSE IF -orientation_threshold <= orientation <= orientation_threshold
-            DRIVE forward
-        ENDIF
+        //to maneuver robot to wanted token
+        if orientation > orientation_threshold:
+            TURN_ROBOT right
+        else if orientation < -orientation_threshold:
+            TURN_ROBOTRN left
+        else if -orientation_threshold <= orientation <= orientation_threshold
+            DRIVE_ROBOT forward
+        endif
     
     ENDIF
 ```
