@@ -124,7 +124,7 @@ The robot starts with searching the silver token, which is defined when 'engage'
 
 Once the task is finished, the robot rejoices.
 
-### Below are the pseudocodes for the procedures and functions for assignment22
+### Pseudocodes for the procedures / functions for assignment22
 ```
 PSEUDOCODE: Program to make the robot arrange all silver-gold tokens in pairs.
 ```
@@ -185,8 +185,8 @@ function LOCATE_TOKEN(SELECTOR)
 Algorithm to implement the given task: 'drive and drop':
 
 SELECTOR //BOOLEAN, True means wanted token is silver, False means wanted token is gold
-SILVER_ARRANGED //LIST containing silver tokens already arranged or moved
-GOLD_ARRANGED //LIST containing gold tokens already arranged or moved
+SILVER_ARRANGED //set of silver tokens already dealt with
+GOLD_ARRANGED //set of gold tokens already dealt with
 
 procedure DRIVE_AND_DROP(SELECTOR)
 
@@ -232,13 +232,13 @@ procedure DRIVE_AND_DROP(SELECTOR)
             DRIVE_ROBOT forward
         endif
     
-    ENDIF
+    endif
 ```
 
 ```
 To implement the given task:
 
-WHILE True
+while True
     DRIVE_AND_DROP(selector)
 ```
 ### Possible Improvements
