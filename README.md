@@ -172,7 +172,7 @@ procedure TURN(speed, time)
     left, right motor power ← 0
 ``` -->
 
-<!-- ```
+```c
 Function: Search required coloured robot and retrieve its parameters
 
 SELECTOR //BOOLEAN type, True means wanted token is silver, while False means wanted token is gold.
@@ -201,7 +201,7 @@ function LOCATE_TOKEN(SELECTOR)
         return default values
     else:
         return dist, orientation, token_code, "silver-token", distance_threshold
-``` -->
+```
 
 ```c
 SELECTOR //BOOLEAN, True means wanted token is silver, False means wanted token is gold
@@ -210,7 +210,7 @@ GOLD_ARRANGED //set of gold tokens already dealt with
 
 procedure DRIVE_AND_DROP(SELECTOR)
 
-    distance, orientation, token_code, token_color, distance_threshold ← LOCATE_TOKEN(SELECTOR)
+    token_information ← LOCATE_TOKEN(SELECTOR)
 
     if no token detected
         TURN_ROBOT //continue searching
@@ -222,12 +222,12 @@ procedure DRIVE_AND_DROP(SELECTOR)
         END EXECUTION
 
     //If token of arranged code found and is of same color (useful in case of duplicate token codes for different colors)
-    else if (SELECTOR is True AND token_code in SILVER_ARRANGED) OR
-                (SELECTOR is False AND token_code in GOLD_ARRANGED)
+    else if (SELECTOR is True AND token_information[token_code] is in SILVER_ARRANGED) OR
+                (SELECTOR is False AND token_information[token_code] is in GOLD_ARRANGED)
         TURN_ROBOT //continue searching
     
     else
-        if distance < distance_threshold
+        if token_information[distance] < token_information[distance_threshold]
             if SELECTOR is True
                 GRAB_TOKEN()
                 add token to SILVER_ARRANGED
@@ -239,12 +239,12 @@ procedure DRIVE_AND_DROP(SELECTOR)
             invert SELECTOR
         endif
 
-        //to maneuver robot to wanted token
-        if orientation > orientation_threshold:
+        //maneuver robot to wanted token
+        if token_information[orientation] > orientation_threshold:
             TURN_ROBOT right
-        else if orientation < -orientation_threshold:
+        else if token_information[orientation] < -orientation_threshold:
             TURN_ROBOTRN left
-        else if orientation <= |orientation_threshold|
+        else if token_information[orientation] <= |orientation_threshold|
             DRIVE_ROBOT forward
         endif
     
