@@ -172,9 +172,9 @@ procedure TURN(speed, time)
     left, right motor power ← 0
 ``` -->
 
-```c
-Function: Search required coloured robot and retrieve its parameters
+#### Function: Search required coloured robot and retrieve its parameters
 
+```c
 SELECTOR //BOOLEAN type, True means wanted token is silver, while False means wanted token is gold.
 
 function LOCATE_TOKEN(SELECTOR)
@@ -203,12 +203,14 @@ function LOCATE_TOKEN(SELECTOR)
         return dist, orientation, token_code, "silver-token", distance_threshold
 ```
 
+#### Procedure: Arrange all silver-gold tokens in pairs.
+
 ```c
 SELECTOR //BOOLEAN, True means wanted token is silver, False means wanted token is gold
 SILVER_ARRANGED //set of silver tokens already dealt with
 GOLD_ARRANGED //set of gold tokens already dealt with
 
-procedure DRIVE_AND_DROP(SELECTOR)
+procedure MAIN()
 
     token_information ← LOCATE_TOKEN(SELECTOR)
 
@@ -243,7 +245,7 @@ procedure DRIVE_AND_DROP(SELECTOR)
         if token_information[orientation] > orientation_threshold:
             TURN_ROBOT right
         else if token_information[orientation] < -orientation_threshold:
-            TURN_ROBOTRN left
+            TURN_ROBOT left
         else if token_information[orientation] <= |orientation_threshold|
             DRIVE_ROBOT forward
         endif
