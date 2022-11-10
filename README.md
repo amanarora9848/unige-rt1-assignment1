@@ -16,6 +16,7 @@ To run the project, it is recommended to create a python2 virtualenv for the pro
 
 ```shell
 $ pip install virtualenv
+$ git clone https://github.com/amanarora9848/unige-rt1-assignment1.git
 $ cd unige-rt1-assignment1
 $ virtualenv -p /usr/bin/python2.7 .rt1project1
 $ . .rt1project1/bin/activate
@@ -40,16 +41,19 @@ On Ubuntu, this can be accomplished by:
 * Get the location. In my case this was `/usr/local/lib/python2.7/dist-packages`
 * Create symlink: `ln -s path/to/simulator/sr/robot /usr/local/lib/python2.7/dist-packages/sr/`
 
+#### Note:
+The robot might (in rare cases) appear stopped, but actually it be turning in opposite directions very fast and could take a couple of moments until it reorients itself correctly and finds the token. In such cases, please patiently wait for it to move fast again, it will.
+
 ## The Exercise
 -----------------------------
 
-To run one the scripts in the simulator, use `run.py`, passing it the file names.
+To run the scripts in the simulator, use `run.py`, passing to it the file names.
 
 ```shell
 $ python run.py assigment.py
 ```
 
-![Short video of task in action](rt1assignment1.gif)
+![Short video of task in action](rt1pr1.gif)
 
 Robot API
 ---------
@@ -123,11 +127,11 @@ The robot starts with searching the silver token, which is defined when 'engage'
 
 Once the task is finished, the robot rejoices.
 
-### Below are the pseudocodes for the procedures and functions for assignment22
+### Pseudocodes for the procedures / functions for assignment22
 ```
 PSEUDOCODE: Program to make the robot arrange all silver-gold tokens in pairs.
 ```
-```
+<!-- ```
 Procedures to drive robot around:
 
 procedure DRIVE(speed, time)
@@ -141,94 +145,103 @@ procedure TURN(speed, time)
     right motor power ← -speed
     sleep(time)
     left, right motor power ← 0
-```
+``` -->
 
 ```
 Function to search required coloured robot and retrieve its parameters
+SELECTOR //BOOLEAN type, True means wanted token is silver, while False means wanted token is gold.
 
-// Value of selector = True means wanted token is silver, while False means wanted token is gold.
-function LOCATE_TOKEN(selector)
-    set dist to 100
-    IF wanted token is silver
-        set ideal distance_threshold for silver token
-        FOR token in observed_tokens
-            IF observed_distance < dist AND token_color is silver
+function LOCATE_TOKEN(SELECTOR)
+    set dist to 100 //Maximum distance after which token not detected
+    if SELECTOR //wanted token is silver
+        set distance_threshold to distance_threshold_for_silver
+        foreach TOKEN in observed_tokens
+            if observed_distance < dist AND observed_token_color is silver
                 set dist to observed_distance
                 set orientation to observed_orientation
-                set token_code to retrieved token code
-            ENDIF
-        ENDFOR
-        IF dist = 100
-            RETURN -1, -1, -1, "token", -1
-        ELSE
+                set token_code to observed_token_code
+            endif
+        endfor
+        if dist = 100 //dist not updated
+            return default values for no wanted token detected
+        else
             RETURN dist, orientation, token_code, "silver-token", distance_threshold
-        ENDIF
-    ELSE
-        set ideal distance_threshold for gold token
-        FOR token in observed_tokens
-            IF observed_distance < dist AND token_color is gold
+        endif
+    else //wanted token is gold
+        set distance_threshold to distance_threshold_for_gold
+        foreach TOKEN in observed_tokens
+            if observed_distance < dist AND observed_token_color is gold
                 set dist to observed_distance
                 set orientation to observed_orientation
-                set token_code to retrieved token code
-            ENDIF
-        ENDFOR
-        IF dist = 100
-            RETURN -1, -1, -1, "token", -1
-        ELSE
+                set token_code to observed_token_code
+            endif
+        endfor
+        if dist = 100 //dist not updated
+            return default values for no wanted token detected
+        else
             RETURN dist, orientation, token_code, "gold-token", distance_threshold
-        ENDIF
-    ENDIF
+        endif
+    endif
 ```
 
 ```
 Algorithm to implement the given task: 'drive and drop':
 
-procedure DRIVE_AND_DROP(selector)
+SELECTOR //BOOLEAN, True means wanted token is silver, False means wanted token is gold
+SILVER_ARRANGED //set of silver tokens already dealt with
+GOLD_ARRANGED //set of gold tokens already dealt with
 
-    distance, orientation, token_code, token_color, distance_threshold ← LOCATE_TOKEN(selector)
+procedure DRIVE_AND_DROP(SELECTOR)
 
-    IF no token detected
-        TURN
+    distance, orientation, token_code, token_color, distance_threshold ← LOCATE_TOKEN(SELECTOR)
+
+    if no token detected
+        TURN_ROBOT //continue searching
     
-    ELSE IF all tokens arranged
-        DRIVE backward
-        rotate twice
+    else if all tokens arranged
+        DRIVE_ROBOT backward
+        TURN_ROBOT for 2 rotations
+        PRINT "Task Completed"
         END EXECUTION
 
-    // This condition is useful to account for duplicate token codes for different colors
-    ELSE IF both silver and gold tokens having the same retriieved token_code have been arranged
-        TURN
+    //Condition useful to account for duplicate token codes for different colors, both already arranged
+    else if token_code in SILVER_ARRANGED AND token_code in GOLD_ARRANGED
+        TURN_ROBOT //continue searching
 
-    ELSE IF (wanted token is silver AND observed silver-token is already arranged) OR
-                (wanted token is gold AND observed gold-token is already arranged)
-        TURN
+    //If token of arranged code found and is of same color (useful in case of duplicate token codes for different colors)
+    else if (SELECTOR AND token_code in SILVER_ARRANGED) OR
+                (NOT SELECTOR AND token_code in GOLD_ARRANGED)
+        TURN_ROBOT //continue searching
     
-    ELSE
-        IF distance < distance_threshold
-            IF wanted token is silver
+    else
+        if distance < distance_threshold
+            if SELECTOR //wanted token is silver
                 GRAB_TOKEN()
-            ELSE
+                add token to SILVER_ARRANGED
+            else //wanted token is gold
                 RELEASE_TOKEN()
-                move back a little
-            ENDIF
-            INVERT selector flag
-        ENDIF
+                add token to GOLD_ARRANGED
+                DRIVE_ROBOT backwards
+            endif
+            INVERT SELECTOR
+        endif
 
-        IF orientation > orientation_threshold:
-            TURN right
-        ELSE IF orientation < -orientation_threshold:
-            TURN left
-        ELSE IF -orientation_threshold <= orientation <= orientation_threshold
-            DRIVE forward
-        ENDIF
+        //to maneuver robot to wanted token
+        if orientation > orientation_threshold:
+            TURN_ROBOT right
+        else if orientation < -orientation_threshold:
+            TURN_ROBOTRN left
+        else if -orientation_threshold <= orientation <= orientation_threshold
+            DRIVE_ROBOT forward
+        endif
     
-    ENDIF
+    endif
 ```
 
 ```
 To implement the given task:
 
-WHILE True
+while True
     DRIVE_AND_DROP(selector)
 ```
 ### Possible Improvements
