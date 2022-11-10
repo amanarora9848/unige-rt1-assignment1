@@ -42,7 +42,7 @@ On Ubuntu, this can be accomplished by:
 * Create symlink: `ln -s path/to/simulator/sr/robot /usr/local/lib/python2.7/dist-packages/sr/`
 
 #### Note:
-The robot might (in rare cases) appear stopped, but actually it be turning in opposite directions very fast and could take a couple of moments until it reorients itself correctly and find the token. In such cases, please patiently wait for it to move fast again, it will.
+The robot might (in rare cases) appear stopped, but actually it be turning in opposite directions very fast and could take a couple of moments until it reorients itself correctly and finds the token. In such cases, please patiently wait for it to move fast again, it will.
 
 ## The Exercise
 -----------------------------

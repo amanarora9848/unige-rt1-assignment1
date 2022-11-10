@@ -71,64 +71,38 @@ def locate_token(flag):
     dist = 100
     current_token_code = 0
 
-    # If looking for silver token, set parameters.
     if flag:
         distance_threshold = silver_th
-        for token in R.see():
-            if token.dist < dist and token.info.marker_type == 'silver-token':
-                dist = token.dist
-                rot_y = token.rot_y
-                current_token_code = token.info.code
-                timestamp = token.timestamp
-        if dist == 100:
-            silver_token_info_dict = {
-                'distance_obj': -1,
-                'rot_obj': -1,
-                'token_code': -1,
-                'token_color': "token",
-                'distance_threshold': -1,
-                'timestamp': -1
-            }
-        else:
-            silver_token_info_dict = {
-                'distance_obj': dist,
-                'rot_obj': rot_y,
-                'token_code': current_token_code,
-                'token_color': MARKER_TOKEN_SILVER,
-                'distance_threshold': silver_th,
-                'timestamp': timestamp
-            }
-        return silver_token_info_dict
-
-    # If looking for gold token, set parameters.
+        color = 'silver-token'
     else:
         distance_threshold = gold_th
-        for token in R.see():
-            if token.dist < dist and token.info.marker_type == 'gold-token':
-                dist = token.dist
-                rot_y = token.rot_y
-                current_token_code = token.info.code
-                timestamp = token.timestamp
-        if dist == 100:
-            gold_token_info_dict = {
-                'distance_obj': -1,
-                'rot_obj': -1,
-                'token_code': -1,
-                'token_color': "token",
-                'distance_threshold': -1,
-                'timestamp': -1
-            }
-        else:
-            gold_token_info_dict = {
-                'distance_obj': dist,
-                'rot_obj': rot_y,
-                'token_code': current_token_code,
-                'token_color': MARKER_TOKEN_GOLD,
-                'distance_threshold': gold_th,
-                'timestamp': timestamp
-            }
-        return gold_token_info_dict
-
+        color = 'gold-token'
+    
+    for token in R.see():
+        if token.dist < dist and token.info.marker_type == color:
+            dist = token.dist
+            rot_y = token.rot_y
+            current_token_code = token.info.code
+            token_color = token.info.marker_type
+    
+    if dist == 100:
+        token_info_dict = {
+            'distance_obj': -1,
+            'rot_obj': -1,
+            'token_code': -1,
+            'token_color': "token",
+            'distance_threshold': -1
+        }
+    else:
+        token_info_dict = {
+            'distance_obj': dist,
+            'rot_obj': rot_y,
+            'token_code': current_token_code,
+            'token_color': token_color,
+            'distance_threshold': distance_threshold
+        }
+    return token_info_dict
+    
 
 def main():
     """
@@ -137,7 +111,7 @@ def main():
     grabs it, then drives toward closest gold token and releases the silver token, making pairs.
     Continues until all tokens are paired.
     """
-    # Printing flags defined
+    # Flags for clean print statements - eac hset of statement displayed once per activity
     not_seen_flag = done_flag =  already_seen_flag = unmoved_flag = moveback_flag = False
     global engage
 
@@ -228,7 +202,7 @@ def main():
                 turn(15, 0.04)
             elif token_info_dict['rot_obj'] < -a_th:
                 turn(-15, 0.04)
-            elif -a_th <= token_info_dict['rot_obj'] <= a_th:
+            elif token_info_dict['rot_obj'] <= abs(a_th):
                 drive(100, 0.05)
 
 
