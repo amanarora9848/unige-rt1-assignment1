@@ -26,6 +26,8 @@ displaced_tokens = {
 containing the token codes which have been dealt with
 """
 
+total_tokens = 12
+
 engage = True  # Starting with silver who uses this flag first, and then is given to gold.
 
 def drive(speed, seconds):
@@ -73,18 +75,18 @@ def locate_token(flag):
 
     if flag:
         distance_threshold = silver_th
-        color = 'silver-token'
+        color = MARKER_TOKEN_SILVER
     else:
         distance_threshold = gold_th
-        color = 'gold-token'
-    
+        color = MARKER_TOKEN_GOLD
+
     for token in R.see():
         if token.dist < dist and token.info.marker_type == color:
             dist = token.dist
             rot_y = token.rot_y
             current_token_code = token.info.code
             token_color = token.info.marker_type
-    
+
     if dist == 100:
         token_info_dict = {
             'distance_obj': -1,
@@ -102,7 +104,7 @@ def locate_token(flag):
             'distance_threshold': distance_threshold
         }
     return token_info_dict
-    
+
 
 def main():
     """
@@ -131,7 +133,8 @@ def main():
             turn(20, 0.03)
 
         # If all tokens have been dealt with (if task is complete), rejoice and exit.
-        elif len(displaced_tokens['silver']) == 6 and len(displaced_tokens['gold']) == 6:
+        elif (len(displaced_tokens['silver']) == total_tokens/2 
+                and len(displaced_tokens['gold']) == total_tokens/2):
             drive(-90, 1.0)
             turn(85, 0.8)
             turn(-85, 0.8)
@@ -170,6 +173,7 @@ def main():
                 "\nRushing to grab it...")
                 print("-" * 78)
             unmoved_flag = True
+
             # If robot is really close and ready to grab (or release) the token.
             if token_info_dict['distance_obj'] < token_info_dict['distance_threshold']:
                 # If searching for silver token and it's close (upto silver_th i.e. silver threshold), grab it.
@@ -197,12 +201,18 @@ def main():
                 # Flip the engage flag upon grabbing or releasing of silver token
                 engage = not engage
                 moveback_flag = False
+
             # Drive robot towards the token
+            # Commented lines for dynamically changing drive/turn speeds of robot w.r.t. to distance or orientation.
+            # (values written performed good)
             if token_info_dict['rot_obj'] > a_th:
+                # turn(+(token_info_dict['rot_obj'])/(0.02*60), 0.02)
                 turn(15, 0.04)
             elif token_info_dict['rot_obj'] < -a_th:
+                # turn(-(token_info_dict['rot_obj'])/(0.02*60), 0.02)
                 turn(-15, 0.04)
             elif token_info_dict['rot_obj'] <= abs(a_th):
+                # drive((token_info_dict['distance_obj'] * 75)/0.05, 0.05)
                 drive(100, 0.05)
 
 
