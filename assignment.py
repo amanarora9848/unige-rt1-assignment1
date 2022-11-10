@@ -26,9 +26,11 @@ displaced_tokens = {
 containing the token codes which have been dealt with
 """
 
-total_tokens = 12
+engage = True # Starting with silver who uses this flag first, and then is given to gold.
 
-engage = True  # Starting with silver who uses this flag first, and then is given to gold.
+total_tokens = 12 # Total number of tokens (should be evenfor this task)
+
+want_dynamic_speed = True # Preference for dynamic or static speed settings for the robot
 
 def drive(speed, seconds):
     """
@@ -203,17 +205,20 @@ def main():
                 moveback_flag = False
 
             # Drive robot towards the token
-            # Commented lines for static drive/turn speeds of robot w.r.t. to distance or orientation.
-            # Uncomment those and comment functions with passed dynamic speeds to use static speeds for the task.
-            if token_info_dict['rot_obj'] > a_th:
-                # turn(+(token_info_dict['rot_obj'])/(0.02*60), 0.01) # Dynamic turn speed setting
-                turn(15, 0.04)
-            elif token_info_dict['rot_obj'] < -a_th:
-                # turn(-(token_info_dict['rot_obj'])/(0.02*60), 0.01) # Dynamic turn speed setting
-                turn(-15, 0.04)
-            elif token_info_dict['rot_obj'] <= abs(a_th):
-                # drive((token_info_dict['distance_obj'] * 75)/0.05, 0.05) # Dynamic linear speed setting
-                drive(100, 0.05)
+            if not want_dynamic_speed:
+                if token_info_dict['rot_obj'] > a_th:
+                    turn(15, 0.04)
+                elif token_info_dict['rot_obj'] < -a_th:
+                    turn(-15, 0.04)
+                elif token_info_dict['rot_obj'] <= abs(a_th):
+                    drive(100, 0.05)
+            elif want_dynamic_speed:
+                if token_info_dict['rot_obj'] > a_th:
+                    turn(+(token_info_dict['rot_obj'])/(0.02*60), 0.01) # Dynamic turn speed setting
+                elif token_info_dict['rot_obj'] < -a_th:
+                    turn(-(token_info_dict['rot_obj'])/(0.02*60), 0.01) # Dynamic turn speed setting
+                elif token_info_dict['rot_obj'] <= abs(a_th):
+                    drive((token_info_dict['distance_obj'] * 75)/0.05, 0.05) # Dynamic linear speed setting
 
 
 # Run
