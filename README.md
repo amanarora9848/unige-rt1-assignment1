@@ -127,10 +127,35 @@ The robot starts with searching the silver token, which is defined when 'engage'
 
 Once the task is finished, the robot rejoices.
 
-### Pseudocodes for the procedures / functions for assignment22
+### Global variables and "switches"
+
+The code has following variables which control different aspects of the overall execution, as stated in the comments:
+```python
+a_th = 2.0
+""" float: Threshold for the control of the orientation """
+
+silver_th = 0.40 # Threshold distance for silver (nearest distance to approach before action).
+gold_th = 0.62  # Threshold for gold, slightly more.
+""" float: Thresholds for the control of the linear distance to a silver or gold token """
+
+engage = True # Starting with silver who uses this flag first, and then is given to gold.
+
+total_tokens = 12 # Total number of tokens (should be evenfor this task)
+
+want_dynamic_speed = True # Preference for dynamic or static speed settings for the robot
+
 ```
-PSEUDOCODE: Program to make the robot arrange all silver-gold tokens in pairs.
-```
+The variables `silver_th` and `gold_th` control the minimum distance of approach to respective token, and gold has a higher value, unsurprisingly, because the silver token has to be released in front of the gold token without pushing it. Variable `a_th` defines the same thing, just for the orientation of the robot w.r.t token.
+
+The toggle `engage` toggles everything concerning with the silver/gold token. Functions taking this flag gather information and execute instructions of search, grab and release based on this flag. `engage` being True is silver, and opposite is gold.
+
+`total_tokens` is a variable which holds the number of tokens in the environment, and the code takes this into account and stops when all tokens have been arranged. This is kept for a possible future improvement wherein we can take input from user or other source regarding number of elements (even).
+
+Finally, `want_dynamic_speed` is an option that the user can choose to keep True (if they want smoother motion of robot, the robot drive and turn speeds vary with variations in the distance or orientation from the token being searched), or want the speeds to be static i.e. False.
+
+
+### PSEUDOCODE: Program to make the robot arrange all silver-gold tokens in pairs.
+
 <!-- ```
 Procedures to drive robot around:
 
@@ -147,46 +172,38 @@ procedure TURN(speed, time)
     left, right motor power ← 0
 ``` -->
 
-```
-Function to search required coloured robot and retrieve its parameters
+<!-- ```
+Function: Search required coloured robot and retrieve its parameters
+
 SELECTOR //BOOLEAN type, True means wanted token is silver, while False means wanted token is gold.
 
 function LOCATE_TOKEN(SELECTOR)
     set dist to 100 //Maximum distance after which token not detected
-    if SELECTOR //wanted token is silver
+
+    if SELECTOR
         set distance_threshold to distance_threshold_for_silver
-        foreach TOKEN in observed_tokens
-            if observed_distance < dist AND observed_token_color is silver
-                set dist to observed_distance
-                set orientation to observed_orientation
-                set token_code to observed_token_code
-            endif
-        endfor
-        if dist = 100 //dist not updated
-            return default values for no wanted token detected
-        else
-            RETURN dist, orientation, token_code, "silver-token", distance_threshold
-        endif
-    else //wanted token is gold
+        set color to silver-token
+    else:
         set distance_threshold to distance_threshold_for_gold
-        foreach TOKEN in observed_tokens
-            if observed_distance < dist AND observed_token_color is gold
-                set dist to observed_distance
-                set orientation to observed_orientation
-                set token_code to observed_token_code
-            endif
-        endfor
-        if dist = 100 //dist not updated
-            return default values for no wanted token detected
-        else
-            RETURN dist, orientation, token_code, "gold-token", distance_threshold
-        endif
+        set color to gold-token
     endif
-```
 
-```
-Algorithm to implement the given task: 'drive and drop':
+    foreach TOKEN in observed_tokens
+        if observed_distance < dist AND observed_token_color is silver
+            set dist to observed_distance
+            set orientation to observed_orientation
+            set token_code to observed_token_code
+            set token_code to observed_token_color
+        endif
+    endfor
 
+    if dist is not updated
+        return default values
+    else:
+        return dist, orientation, token_code, "silver-token", distance_threshold
+``` -->
+
+```c
 SELECTOR //BOOLEAN, True means wanted token is silver, False means wanted token is gold
 SILVER_ARRANGED //set of silver tokens already dealt with
 GOLD_ARRANGED //set of gold tokens already dealt with
@@ -200,30 +217,26 @@ procedure DRIVE_AND_DROP(SELECTOR)
     
     else if all tokens arranged
         DRIVE_ROBOT backward
-        TURN_ROBOT for 2 rotations
+        TURN_ROBOT action
         PRINT "Task Completed"
         END EXECUTION
 
-    //Condition useful to account for duplicate token codes for different colors, both already arranged
-    else if token_code in SILVER_ARRANGED AND token_code in GOLD_ARRANGED
-        TURN_ROBOT //continue searching
-
     //If token of arranged code found and is of same color (useful in case of duplicate token codes for different colors)
-    else if (SELECTOR AND token_code in SILVER_ARRANGED) OR
-                (NOT SELECTOR AND token_code in GOLD_ARRANGED)
+    else if (SELECTOR is True AND token_code in SILVER_ARRANGED) OR
+                (SELECTOR is False AND token_code in GOLD_ARRANGED)
         TURN_ROBOT //continue searching
     
     else
         if distance < distance_threshold
-            if SELECTOR //wanted token is silver
+            if SELECTOR is True
                 GRAB_TOKEN()
                 add token to SILVER_ARRANGED
-            else //wanted token is gold
+            else
                 RELEASE_TOKEN()
                 add token to GOLD_ARRANGED
                 DRIVE_ROBOT backwards
             endif
-            INVERT SELECTOR
+            invert SELECTOR
         endif
 
         //to maneuver robot to wanted token
@@ -231,24 +244,24 @@ procedure DRIVE_AND_DROP(SELECTOR)
             TURN_ROBOT right
         else if orientation < -orientation_threshold:
             TURN_ROBOTRN left
-        else if -orientation_threshold <= orientation <= orientation_threshold
+        else if orientation <= |orientation_threshold|
             DRIVE_ROBOT forward
         endif
     
     endif
 ```
 
-```
-To implement the given task:
 
-while True
-    DRIVE_AND_DROP(selector)
-```
 ### Possible Improvements
 
-- For the case of a silver obstacle in the path of the robot while it has already grabbed a silver token, logic to go around it can be written
-- User input to set the driving and turning speed of the robot can be accepted and integrated into the code
-- There could be more precision in how close to the gold token does the robot drop the silver token, and if it maneuvers in a way to avoid moving the gold token at all
-- The current code logic could be made even simpler
+- For the case of a silver obstacle in the path of the robot while it has already grabbed a silver token, logic to go around it instead of colliding with it can be written.
+
+- User input to set the driving and turning speed of the robot can be accepted and integrated into the code.
+
+- The movement of the robot can be made smoother, and the execution time can be reduced.
+
+- There could be more precision in how close to the gold token does the robot drop the silver token.
+
+- The current code logic could be made even simpler.
 
 [sr-api]: https://studentrobotics.org/docs/programming/sr/

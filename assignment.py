@@ -11,12 +11,18 @@ It contains the logic to drive the robot around and deliver the "silver" boxes t
 a_th = 2.0
 """ float: Threshold for the control of the orientation """
 
-silver_th = 0.40 # Threshold distance for silver (nearest distance to approach before action).
-gold_th = 0.62  # Threshold for gold, slightly more.
+silver_th = 0.40
+gold_th = 0.62
 """ float: Thresholds for the control of the linear distance to a silver or gold token """
 
 R = Robot()
 """ Instance of the class Robot """
+
+engage = True # Starting with silver who uses this flag first, and then is given to gold.
+
+total_tokens = 12 # Total number of tokens (should be even for this task)
+
+want_dynamic_speed = True # Preference for dynamic or static speed settings for the robot
 
 displaced_tokens = {
     'silver': [],
@@ -25,12 +31,6 @@ displaced_tokens = {
 """ dict: keys depicting the token color, with values of 'list' type, 
 containing the token codes which have been dealt with
 """
-
-engage = True # Starting with silver who uses this flag first, and then is given to gold.
-
-total_tokens = 12 # Total number of tokens (should be evenfor this task)
-
-want_dynamic_speed = True # Preference for dynamic or static speed settings for the robot
 
 def drive(speed, seconds):
     """
@@ -75,9 +75,11 @@ def locate_token(flag):
     dist = 100
     current_token_code = 0
 
+    # If required token is silver.
     if flag:
         distance_threshold = silver_th
         color = MARKER_TOKEN_SILVER
+    # If required token is gold.
     else:
         distance_threshold = gold_th
         color = MARKER_TOKEN_GOLD
@@ -115,7 +117,7 @@ def main():
     grabs it, then drives toward closest gold token and releases the silver token, making pairs.
     Continues until all tokens are paired.
     """
-    # Flags for clean print statements - eac hset of statement displayed once per activity
+    # Flags for clean print statements - each set of statements displayed once per activity
     not_seen_flag = done_flag =  already_seen_flag = unmoved_flag = moveback_flag = False
     global engage
 
@@ -146,21 +148,11 @@ def main():
                 print("-" * 31, "EXECUTION ENDS", "-" * 31)
             done_flag = True
             exit()
-
-        # Ignore if the given token is already there in both gold and silver keys of displaced_token dict.
-        elif (token_info_dict['token_code'] in displaced_tokens['silver'] and
-                token_info_dict['token_code'] in displaced_tokens['gold']):
-            if not already_seen_flag:
-                print("Already moved token:", token_info_dict['token_code'],
-                "- Searching the next", token_info_dict['token_color'], "...")
-                print("-" * 78)
-            already_seen_flag = True
-            turn(20, 0.03)
-
-        # If a (silver) or (gold) token has already been displaced, don't touch it again, continue search.
-        # This is useful because there may be tokens with same code but different colors
-        elif ((engage and token_info_dict['token_code'] in displaced_tokens['silver']) or
-                (not engage and token_info_dict['token_code'] in displaced_tokens['gold'])):
+        
+        # If a [silver or gold] token has already been displaced, ignore it and continue search.
+        # This is useful because there may be tokens with same code but different colors.
+        elif ((engage and token_info_dict['token_code'] in displaced_tokens['silver']) 
+                or (not engage and token_info_dict['token_code'] in displaced_tokens['gold'])):
             if not already_seen_flag:
                 print("Already moved token:", token_info_dict['token_code'],
                 "- Searching the next", token_info_dict['token_color'], "...")
@@ -213,13 +205,10 @@ def main():
                 elif token_info_dict['rot_obj'] <= abs(a_th):
                     drive(100, 0.05)
             elif want_dynamic_speed:
-                if token_info_dict['rot_obj'] > a_th:
-                    turn(+(token_info_dict['rot_obj'])/(0.02*60), 0.01) # Dynamic turn speed setting
-                elif token_info_dict['rot_obj'] < -a_th:
-                    turn(-(token_info_dict['rot_obj'])/(0.02*60), 0.01) # Dynamic turn speed setting
+                if token_info_dict['rot_obj'] > a_th or token_info_dict['rot_obj'] < -a_th:
+                    turn(token_info_dict['rot_obj']/(0.01*85), 0.005) # Dynamic turn speed setting
                 elif token_info_dict['rot_obj'] <= abs(a_th):
-                    drive((token_info_dict['distance_obj'] * 75)/0.05, 0.05) # Dynamic linear speed setting
+                    drive((token_info_dict['distance_obj'] * 70)/0.05, 0.05) # Dynamic linear speed setting
 
-
-# Run
+# Execute
 main()
