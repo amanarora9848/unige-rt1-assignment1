@@ -206,14 +206,14 @@ def main():
             # Commented lines for static drive/turn speeds of robot w.r.t. to distance or orientation.
             # Uncomment those and comment functions with passed dynamic speeds to use static speeds for the task.
             if token_info_dict['rot_obj'] > a_th:
-                turn(+(token_info_dict['rot_obj'])/(0.02*60), 0.01) # Dynamic turn speed setting
-                # turn(15, 0.04)
+                # turn(+(token_info_dict['rot_obj'])/(0.02*60), 0.01) # Dynamic turn speed setting
+                turn(15, 0.04)
             elif token_info_dict['rot_obj'] < -a_th:
-                turn(-(token_info_dict['rot_obj'])/(0.02*60), 0.01) # Dynamic turn speed setting
-                # turn(-15, 0.04)
+                # turn(-(token_info_dict['rot_obj'])/(0.02*60), 0.01) # Dynamic turn speed setting
+                turn(-15, 0.04)
             elif token_info_dict['rot_obj'] <= abs(a_th):
-                drive((token_info_dict['distance_obj'] * 75)/0.05, 0.05) # Dynamic linear speed setting
-                # drive(100, 0.05)
+                # drive((token_info_dict['distance_obj'] * 75)/0.05, 0.05) # Dynamic linear speed setting
+                drive(100, 0.05)
 
 
 # Run
