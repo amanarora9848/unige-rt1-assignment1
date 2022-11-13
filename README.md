@@ -226,37 +226,37 @@ GOLD_ARRANGED //set of gold tokens already dealt with
 
 procedure MAIN()
 
-    token_information ← LOCATE_TOKEN(SELECTOR)
+    token_info ← LOCATE_TOKEN(SELECTOR)
 
     if no token detected
-        KEEP SEARCHING
-    
+        keep searching
+
     else if all tokens arranged
-        END EXECUTION
+        end execution
 
     else if token observed has required color and has already been arranged
-        KEEP SEARCHING
+        keep searching
     
     else
         if token_information[distance] < token_information[distance_threshold]
             if SELECTOR is True
-                GRAB TOKEN
-                add token to SILVER_ARRANGED
+                grab token
+                ADD token to SILVER_ARRANGED
             else
-                RELEASE TOKEN
+                release token
                 ADD token to GOLD_ARRANGED
-                DRIVE_ROBOT backwards
+                drive robot backwards
             endif
             invert SELECTOR
         endif
 
         //maneuver robot to wanted token
         if token_information[orientation] > orientation_threshold:
-            TURN_ROBOT right
+            turn robot right
         else if token_information[orientation] < -orientation_threshold:
-            TURN_ROBOT left
+            turn robot left
         else if token_information[orientation] <= |orientation_threshold|
-            DRIVE_ROBOT forward
+            drive robot forward
         endif
     
     endif
