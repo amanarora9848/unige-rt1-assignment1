@@ -127,7 +127,7 @@ The robot starts with searching the silver token, which is defined when 'engage'
 
 Once the task is finished, the robot rejoices.
 
-### Global variables and "switches"
+### Variables and "switches"
 
 The code has following variables which control different aspects of the overall execution, as stated in the comments:
 ```python
@@ -144,6 +144,7 @@ total_tokens = 12 # Total number of tokens (should be evenfor this task)
 
 want_dynamic_speed = True # Preference for dynamic or static speed settings for the robot
 
+not_seen_flag = done_flag = already_seen_flag = unmoved_flag = moveback_flag = False
 ```
 The variables `silver_th` and `gold_th` control the minimum distance of approach to respective token, and gold has a higher value, unsurprisingly, because the silver token has to be released in front of the gold token without pushing it. Variable `a_th` defines the same thing, just for the orientation of the robot w.r.t token.
 
@@ -151,10 +152,23 @@ The toggle `engage` toggles everything concerning with the silver/gold token. Fu
 
 `total_tokens` is a variable which holds the number of tokens in the environment, and the code takes this into account and stops when all tokens have been arranged. This is kept for a possible future improvement wherein we can take input from user or other source regarding number of elements (even).
 
-Finally, `want_dynamic_speed` is an option that the user can choose to keep True (if they want smoother motion of robot, the robot drive and turn speeds vary with variations in the distance or orientation from the token being searched), or want the speeds to be static i.e. False.
+`want_dynamic_speed` is an option that the user can choose to keep True (if they want smoother motion of robot, the robot drive and turn speeds vary with variations in the distance or orientation from the token being searched), or want the speeds to be static i.e. False.
 
+Finally, variables `not_seen_flag` to `moveback_flag` are used to control the printing procedures (for appropriate print statements and printing them once per condition).
 
-### PSEUDOCODE: Program to make the robot arrange all silver-gold tokens in pairs.
+### Functions and Procedures
+
+```
+Following functions are used to drive the robot around and perform the task requested.
+
+1. PROCEDURE drive: Function for setting a linear velocity
+2. PROCEDURE turn : Function for setting an angular velocity
+3. FUNCTION locate_token : Function to find the closest silver or gold token, based on the passed control flag. Returns a dictionary "token_information" with keys as follows - distance, orientation, token_code, token_color, distance_threshold.
+4. PROCEDURE drive_to_deliver : Function to drive robot towards the token.
+5. PROCEDURE continue_search : Function to rotate robot and make it keep searching for the next token.
+6. PROCEDURE grab_release : Function to grab the nearest seen silver token and release it near the nearest seen gold token.
+7. PROCEDURE end_task : Function for the robot to stop the task and end program execution after completion.
+```
 
 <!-- ```
 Procedures to drive robot around:
@@ -172,7 +186,7 @@ procedure TURN(speed, time)
     left, right motor power ← 0
 ``` -->
 
-#### Function: Search required coloured robot and retrieve its parameters
+<!-- #### FUNCTION: Search required coloured robot and retrieve its parameters
 
 ```c
 SELECTOR //BOOLEAN type, True means wanted token is silver, while False means wanted token is gold.
@@ -189,7 +203,7 @@ function LOCATE_TOKEN(SELECTOR)
     endif
 
     foreach TOKEN in observed_tokens
-        if observed_distance < dist AND observed_token_color is silver
+        if observed_distance < dist AND observed_token_color is color
             set dist to observed_distance
             set orientation to observed_orientation
             set token_code to observed_token_code
@@ -201,11 +215,11 @@ function LOCATE_TOKEN(SELECTOR)
         return default values
     else:
         return dist, orientation, token_code, "silver-token", distance_threshold
-```
+``` -->
 
-#### Procedure: Arrange all silver-gold tokens in pairs.
+### PROCEDURE: Arrange all silver-gold tokens in pairs.
 
-```c
+```js
 SELECTOR //BOOLEAN, True means wanted token is silver, False means wanted token is gold
 SILVER_ARRANGED //set of silver tokens already dealt with
 GOLD_ARRANGED //set of gold tokens already dealt with
@@ -215,27 +229,22 @@ procedure MAIN()
     token_information ← LOCATE_TOKEN(SELECTOR)
 
     if no token detected
-        TURN_ROBOT //continue searching
+        KEEP SEARCHING
     
     else if all tokens arranged
-        DRIVE_ROBOT backward
-        TURN_ROBOT action
-        PRINT "Task Completed"
         END EXECUTION
 
-    //If token of arranged code found and is of same color (useful in case of duplicate token codes for different colors)
-    else if (SELECTOR is True AND token_information[token_code] is in SILVER_ARRANGED) OR
-                (SELECTOR is False AND token_information[token_code] is in GOLD_ARRANGED)
-        TURN_ROBOT //continue searching
+    else if token observed has required color and has already been arranged
+        KEEP SEARCHING
     
     else
         if token_information[distance] < token_information[distance_threshold]
             if SELECTOR is True
-                GRAB_TOKEN()
+                GRAB TOKEN
                 add token to SILVER_ARRANGED
             else
-                RELEASE_TOKEN()
-                add token to GOLD_ARRANGED
+                RELEASE TOKEN
+                ADD token to GOLD_ARRANGED
                 DRIVE_ROBOT backwards
             endif
             invert SELECTOR
@@ -260,7 +269,7 @@ procedure MAIN()
 
 - User input to set the driving and turning speed of the robot can be accepted and integrated into the code.
 
-- The movement of the robot can be made smoother, and the execution time can be reduced.
+- The movement of the robot can be made smoother by calculating appropriate gain for accuracy and adding (or reducing) small amount of "power" on every iteration upto a desired value, instead of setting it to desired value, and the execution time can be reduced. However, this method was observed to be a little prone to errors, so skipped for now.
 
 - There could be more precision in how close to the gold token does the robot drop the silver token.
 
