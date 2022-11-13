@@ -53,7 +53,7 @@ To run the scripts in the simulator, use `run.py`, passing to it the file names.
 $ python run.py assigment.py
 ```
 
-![Short video of task in action](rt1pr1.gif)
+![Short video of task in action](rt1prj1.gif)
 
 Robot API
 ---------
