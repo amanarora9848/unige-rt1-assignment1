@@ -132,7 +132,6 @@ def drive_to_deliver(distance, orientation):
             drive(100, 0.05)
     elif want_dynamic_speed:
         if orientation > a_th or orientation < -a_th:
-            # turn(orientation/(0.01*75), 0.005)  # Dynamic turn speed setting
             turn(orientation/(0.01*85), 0.005)
         elif orientation <= abs(a_th):
             drive((distance * 70)/(0.05), 0.05)  # Dynamic linear speed setting
