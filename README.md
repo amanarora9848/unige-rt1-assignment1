@@ -238,7 +238,7 @@ procedure MAIN()
         keep searching
     
     else
-        if token_information[distance] < token_information[distance_threshold]
+        if token_info[distance] < token_info[distance_threshold_for_current_color_token]
             if SELECTOR is True
                 grab token
                 ADD token to SILVER_ARRANGED
@@ -251,11 +251,11 @@ procedure MAIN()
         endif
 
         //maneuver robot to wanted token
-        if token_information[orientation] > orientation_threshold:
+        if token_info[orientation] > orientation_threshold:
             turn robot right
-        else if token_information[orientation] < -orientation_threshold:
+        else if token_info[orientation] < -orientation_threshold:
             turn robot left
-        else if token_information[orientation] <= |orientation_threshold|
+        else if token_info[orientation] <= |orientation_threshold|
             drive robot forward
         endif
     

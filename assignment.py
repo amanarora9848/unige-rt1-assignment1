@@ -143,6 +143,7 @@ def continue_search(token_color, orientation, token_search_condition, token_code
     Args: token_color(string): Silver or Gold token
           orientation(float): Orientation of robot w.r.t. token.
           token_search_condition(int): 1 for no token found case, while 2 when spotted token is already arranged.
+          token_code(int): Token code of the token in observation.
     """
     global not_seen_flag, already_seen_flag
     if token_search_condition == 1:
