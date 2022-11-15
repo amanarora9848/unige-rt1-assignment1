@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Allow __init__.pyc in sr directory
+!sr/__init__.pyc
+
 # C extensions
 *.so
 
