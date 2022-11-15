@@ -171,7 +171,7 @@ def grab_release(token_code):
     Function to grab the nearest seen silver token and release it near the nearest seen gold token.
     Args: token-code(int): Spotted token code.
     """
-    global engage, moveback_flag
+    global engage, moveback_flag, unmoved_flag
     # If searching for silver token and it's close (upto silver_th i.e. silver threshold), grab it.
     if engage:
         if R.grab():
