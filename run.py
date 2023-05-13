@@ -1,4 +1,5 @@
-
+import sys
+import signal
 import yaml
 import threading
 import argparse
@@ -17,6 +18,15 @@ args = parser.parse_args()
 def read_file(fn):
     with open(fn, 'r') as f:
         return f.read()
+
+# handler function for the alarm
+def handler(signum, frame):
+    print("Timeout, exiting.")
+    sys.exit(1)
+
+# Set the signal handler and a 5-minute alarm
+signal.signal(signal.SIGALRM, handler)
+signal.alarm(120)  # 150 seconds
 
 robot_scripts = args.robot_scripts
 prompt = "Enter the names of the Python files to run, separated by commas: "

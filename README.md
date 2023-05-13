@@ -15,11 +15,11 @@ Pygame, unfortunately, can be tricky (though [not impossible](http://askubuntu.c
 To run the project, it is recommended to create a python2 virtualenv for the project. To do so, we first need to install virtualenv pip package, and then create a python2.7 virtualenv since the simulator is based on python2.7:
 
 ```shell
-$ pip install virtualenv
-$ git clone https://github.com/amanarora9848/unige-rt1-assignment1.git
-$ cd unige-rt1-assignment1
-$ virtualenv -p /usr/bin/python2.7 .rt1project1
-$ . .rt1project1/bin/activate
+pip install virtualenv
+git clone https://github.com/amanarora9848/unige-rt1-assignment1.git
+cd unige-rt1-assignment1
+virtualenv -p /usr/bin/python2.7 .rt1project1
+. .rt1project1/bin/activate
 ```
 
 This activated the python2.7 virtualenv. To deactivate:

@@ -1,7 +1,11 @@
+#!/usr/bin/env python
 from __future__ import print_function
 
 import time
 from sr.robot import *
+import cProfile
+import csv
+import os
 
 """
 This is the code for Assignment 1 for the Research Track 1 course, Semester 1 (LM) at UniGe.
@@ -36,6 +40,9 @@ containing the token codes which have been dealt with
 
 # Flags for clean print statements - make each set of statements to be displayed once per activity.
 not_seen_flag = done_flag = already_seen_flag = unmoved_flag = moveback_flag = False
+
+# search time for the robot to end the task if it takes too long
+search_time = 0
 
 
 def drive(speed, seconds):
@@ -212,8 +219,41 @@ def end_task():
         print("Job is done.")
         print("Delivered", len(displaced_tokens['silver']), "tokens.")
         print("-" * 31, "EXECUTION ENDS", "-" * 31)
-    done_flag = True
-    exit()
+        done_flag = True
+        # end = time.time()
+        # exec_time = end - start
+        # with open('execution_time.txt', 'w') as f:
+        #     f.write(str(exec_time))
+
+
+def reset_variables():
+    global engage, not_seen_flag, done_flag, already_seen_flag, unmoved_flag, moveback_flag
+    engage = True
+    not_seen_flag = done_flag = already_seen_flag = unmoved_flag = moveback_flag = False
+    search_time = 0
+
+    global displaced_tokens
+    displaced_tokens = {
+        'silver': [],
+        'gold': []
+    }
+
+
+def write_execution_times(exec_time):
+    """
+    Function to write the execution times to a csv file.
+    Args: exec_time(float): Execution time of the program.
+    """
+
+    file_path = os.path.abspath('execution_times.csv')
+    file_exists = os.path.isfile(file_path)
+    
+    with open(file_path, 'a') as csvfile:
+        writer = csv.writer(csvfile)
+        if not file_exists:
+            writer.writerow(["Execution Time"])
+        # Write the execution time for this run
+        writer.writerow([exec_time])
 
 
 def main():
@@ -223,14 +263,19 @@ def main():
     grabs it, then drives toward closest gold token and releases the silver token, making pairs.
     Continues until all tokens are paired.
     """
-    global unmoved_flag
+    global unmoved_flag, search_time
+
+    # Reset all variables
+    reset_variables()
 
     print("-" * 30, "EXECUTION BEGINS", "-" * 30)
 
-    while 1:
+    while not done_flag:
 
         # Set the parameters to find and move towards the nearest token
         token_info_dict = locate_token(engage)
+
+        search_start_time = time.time()
 
         # If no token is found, turn and continue search.
         if token_info_dict['token_code'] == -1:
@@ -241,6 +286,7 @@ def main():
         elif (len(displaced_tokens['silver']) == total_tokens/2 and
                 len(displaced_tokens['gold']) == total_tokens/2):
             end_task()
+            break
 
         # If a [silver or gold] token has already been displaced, ignore it and continue search.
         # This is useful because there may be tokens with same code but different colors.
@@ -263,7 +309,20 @@ def main():
 
             # Drive robot towards the token
             drive_to_deliver(token_info_dict['distance_obj'], token_info_dict['rot_obj'])
+        
+        search_end_time = time.time()
+        search_time += search_end_time - search_start_time
+
+        if search_time > 90:
+            print("Failed Completion")
+            print("Exiting...")
+            break
+        
 
 
 # Execute
+starting_time = time.time()
 main()
+ending_time = time.time()
+execution_time = ending_time - starting_time
+write_execution_times(execution_time)

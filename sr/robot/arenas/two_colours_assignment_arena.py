@@ -2,6 +2,7 @@ from __future__ import division
 
 from math import cos, pi, sin
 
+import random # New
 import pygame
 from pygame.rect import Rect
 
@@ -64,7 +65,10 @@ class TwoColoursAssignmentArena(Arena):
                     rotation_amount = 0
                 token = token_type(self, number_offset + i)
                 angle = angle_offset + (2 * pi / TOKENS_PER_CIRCLE) * i
+                # angle = random.uniform(0, 2*pi) # New
                 token.location = (cos(angle) * radius, sin(angle) * radius)
+                # token_radius = random.uniform(INNER_CIRCLE_RADIUS, OUTER_CIRCLE_RADIUS) # New
+                # token.location = (cos(angle) * token_radius, sin(angle) * token_radius) # New
                 token.heading = rotation_amount
                 self.objects.append(token)
 
