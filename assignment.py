@@ -6,6 +6,7 @@ from sr.robot import *
 import cProfile
 import csv
 import os
+import math
 
 
 """
@@ -94,32 +95,6 @@ def turn(speed, seconds):
     time.sleep(seconds * time_step)
     R.motors[0].m0.power = 0
     R.motors[0].m1.power = 0
-
-
-import math
-
-
-# def check_silver_near_gold(tolerance):
-#     """ 
-#     Checks if all gold tokens have at least one silver token within the tolerance.
-
-#     Args:
-#         tolerance (float): The range within which we are looking for a match.
-
-#     Returns:
-#         bool: True if all gold tokens are paired with a silver token, False otherwise.
-#     """
-    
-#     gold_tokens = [marker.dist for marker in R.see() if marker.info.marker_type == 'gold-token']
-#     silver_tokens = [marker.dist for marker in R.see() if marker.info.marker_type == 'silver-token']
-#     print("Gold tokens:", gold_tokens)
-#     print("Silver tokens:", silver_tokens)
-
-#     for gold_token in gold_tokens:
-#         if not any(abs(gold_token - silver_token) <= tolerance for silver_token in silver_tokens):
-#             return False  # Return early if any gold token doesn't have a paired silver token
-
-#     return True  # Return True only if all gold tokens have at least one silver token within tolerance
 
 
 def check_silver_near_gold(tolerance):
@@ -395,7 +370,7 @@ def main():
         inactivity_time += search_end_time - search_start_time
 
         if inactivity_time > inactive_limit:
-            if check_silver_near_gold(0.3):
+            if check_silver_near_gold(0.35):
                 end_task()
                 break
             else:
