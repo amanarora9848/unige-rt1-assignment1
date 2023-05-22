@@ -25,7 +25,7 @@ def run_sim():
     subprocess.call(["python", "run.py", "assignment.py"])
 
 
-def calc_metrics(batch_num):
+def calc_metrics():
     if os.path.exists("execution_times.csv"):
         with open("execution_times.csv", "r") as f:
             reader = csv.reader(f)
@@ -51,8 +51,8 @@ def calc_metrics(batch_num):
             if successful_runs:
                 std_dev = (sum((float(row[0]) - mean_exec_time)**2 for row in successful_runs) / len(successful_runs))**0.5
             
-            # Metrics for the batch
-            metrics = [batch_num, len(all_runs), failed_runs, mean_exec_time, std_dev]
+            # Metrics for all batches
+            metrics = [len(all_runs), failed_runs, mean_exec_time, std_dev]
 
             # Check if metrics.csv file exists
             if os.path.exists("metrics.csv"):
@@ -62,7 +62,7 @@ def calc_metrics(batch_num):
             else:
                 with open("metrics.csv", "w") as f:
                     writer = csv.writer(f)
-                    writer.writerow(["Batch Number", "Total runs", "Failed runs", "Mean Successful runs", "Standard Deviation"])
+                    writer.writerow(["Total runs", "Failed runs", "Mean Successful runs", "Standard Deviation"])
                     writer.writerow(metrics)
 
 
@@ -76,13 +76,11 @@ def main():
     num_batches = args.batches
     threads = []
 
-    # empty_csv("metrics.csv")
+    empty_csv("metrics.csv")
+    empty_csv("execution_times.csv")
 
     for batch in range(num_batches):
-
-        # Empty the CSV file for each batch
-        empty_csv("execution_times.csv")
-
+        
         for _ in range(num_reps):
             t = threading.Thread(target=run_sim)
             t.start()
@@ -94,7 +92,7 @@ def main():
         
         threads = [] # Reset threads for next batch
 
-        calc_metrics(batch+1)
+    calc_metrics()
 
 if __name__ == "__main__":
     main()

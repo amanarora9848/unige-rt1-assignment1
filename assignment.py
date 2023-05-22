@@ -7,10 +7,25 @@ import cProfile
 import csv
 import os
 
+
 """
 This is the code for Assignment 1 for the Research Track 1 course, Semester 1 (LM) at UniGe.
 It contains the logic to drive the robot around and deliver the "silver" boxes to the "gold" stations.
 """
+
+
+########### CONTROL PARAMETERS ###########
+
+# Define time step variable
+time_step = 1  # Adjust this value to control the speed of the robot
+
+inactive_limit = 5  # Inactivity time limit (in seconds), adjust as needed
+
+# Preference for dynamic or static speed settings for the robot
+want_dynamic_speed = True
+
+#########################################
+
 
 a_th = 2.0
 """ float: Threshold for the control of the orientation """
@@ -25,11 +40,6 @@ R = Robot()
 # Starting with silver who uses this flag first, and then is given to gold.
 engage = True
 
-total_tokens = 12 # Total number of tokens (should be even for this task)
-
-# Preference for dynamic or static speed settings for the robot
-want_dynamic_speed = True
-
 displaced_tokens = {
     'silver': [],
     'gold': []
@@ -38,11 +48,24 @@ displaced_tokens = {
 containing the token codes which have been dealt with
 """
 
+seen_markers = []
+
+time_to_see_markers = False
+
 # Flags for clean print statements - make each set of statements to be displayed once per activity.
 not_seen_flag = done_flag = already_seen_flag = unmoved_flag = moveback_flag = False
 
 # search time for the robot to end the task if it takes too long
 search_time = 0
+
+# inactivity time for the robot to end the task if it takes too long
+inactivity_time = 0
+
+# time period while robot keeps searching for pairs far away from each other
+invalidity_period = 0
+
+# numeric flag to check if the robot has failed and in what way
+fail_alert = 1
 
 
 def drive(speed, seconds):
@@ -54,7 +77,7 @@ def drive(speed, seconds):
     """
     R.motors[0].m0.power = speed
     R.motors[0].m1.power = speed
-    time.sleep(seconds)
+    time.sleep(seconds * time_step)
     R.motors[0].m0.power = 0
     R.motors[0].m1.power = 0
 
@@ -68,9 +91,65 @@ def turn(speed, seconds):
     """
     R.motors[0].m0.power = speed
     R.motors[0].m1.power = -speed
-    time.sleep(seconds)
+    time.sleep(seconds * time_step)
     R.motors[0].m0.power = 0
     R.motors[0].m1.power = 0
+
+
+import math
+
+
+# def check_silver_near_gold(tolerance):
+#     """ 
+#     Checks if all gold tokens have at least one silver token within the tolerance.
+
+#     Args:
+#         tolerance (float): The range within which we are looking for a match.
+
+#     Returns:
+#         bool: True if all gold tokens are paired with a silver token, False otherwise.
+#     """
+    
+#     gold_tokens = [marker.dist for marker in R.see() if marker.info.marker_type == 'gold-token']
+#     silver_tokens = [marker.dist for marker in R.see() if marker.info.marker_type == 'silver-token']
+#     print("Gold tokens:", gold_tokens)
+#     print("Silver tokens:", silver_tokens)
+
+#     for gold_token in gold_tokens:
+#         if not any(abs(gold_token - silver_token) <= tolerance for silver_token in silver_tokens):
+#             return False  # Return early if any gold token doesn't have a paired silver token
+
+#     return True  # Return True only if all gold tokens have at least one silver token within tolerance
+
+
+def check_silver_near_gold(tolerance):
+    """
+    Checks if all displaced gold and silver tokens are within a certain tolerance of each other.
+
+    Args:
+        tolerance (float): The range within which we are looking for a match.
+
+    Returns:
+        bool: True if all displaced gold tokens are paired with a silver token, False otherwise.
+    """
+    global invalidity_period
+    invalidity_period_start = time.time()
+    while True:
+        turn(80, 1)
+        gold_tokens = [marker for marker in R.see() if marker.info.marker_type == 'gold-token']
+        silver_tokens = [marker for marker in R.see() if marker.info.marker_type == 'silver-token']
+        if time.time() - invalidity_period_start > 7:
+            break
+        for silver_token in silver_tokens:
+            for gold_token in gold_tokens:
+                if gold_token.info.code in displaced_tokens['gold'] and silver_token.info.code in displaced_tokens['silver']:
+                    if displaced_tokens['gold'].index(gold_token.info.code) == displaced_tokens['silver'].index(silver_token.info.code):
+                        if abs(gold_token.dist - silver_token.dist) > tolerance:
+                            print("FAILURE FOUND!!!!!!!!!!!!!!!!!")
+                            return False
+    invalidity_period_end = time.time()
+    invalidity_period = invalidity_period_end - invalidity_period_start
+    return True
 
 
 def locate_token(flag):
@@ -85,6 +164,7 @@ def locate_token(flag):
              token color (string): retrieve the color of the token ("token" if no token detected)
              distance_threshold(float): respective threshold for closest distance, wrt token color (-1 if no token detected)
     """
+
     dist = 100
     current_token_code = 0
 
@@ -129,7 +209,9 @@ def drive_to_deliver(distance, orientation):
     Args: distance(float): Distance to the respective token.
           orientation(float): Orientation of robot w.r.t. token.
     """
+    global inactivity_time
     # Drive robot towards the token
+    inactivity_time = 0
     if not want_dynamic_speed:
         if orientation > a_th:
             turn(15, 0.04)
@@ -144,6 +226,8 @@ def drive_to_deliver(distance, orientation):
             drive((distance * 70)/(0.05), 0.05)  # Dynamic linear speed setting
 
 
+all_tokens_checked = 0
+
 def continue_search(token_color, orientation, token_search_condition, token_code='0'):
     """
     Function to rotate robot and make it keep searching for the next token.
@@ -152,7 +236,8 @@ def continue_search(token_color, orientation, token_search_condition, token_code
           token_search_condition(int): 1 for no token found case, while 2 when spotted token is already arranged.
           token_code(int): Token code of the token in observation.
     """
-    global not_seen_flag, already_seen_flag
+    global not_seen_flag, already_seen_flag, seen_markers
+
     if token_search_condition == 1:
         if not not_seen_flag:
             print("No", token_color, "seen. Searching...")
@@ -165,7 +250,7 @@ def continue_search(token_color, orientation, token_search_condition, token_code
     if token_search_condition == 2:
         if not already_seen_flag:
             print("Already moved token:", token_code,
-                  "- Searching the next", token_color, "...")
+                "- Searching the next", token_color, "...")
             print("-" * 78)
         already_seen_flag = True
         if not want_dynamic_speed:
@@ -173,12 +258,13 @@ def continue_search(token_color, orientation, token_search_condition, token_code
         elif want_dynamic_speed:
             turn(abs(orientation)/0.001*8, 0.001)
 
+
 def grab_release(token_code):
     """
     Function to grab the nearest seen silver token and release it near the nearest seen gold token.
     Args: token-code(int): Spotted token code.
     """
-    global engage, moveback_flag, unmoved_flag
+    global engage, moveback_flag, unmoved_flag, inactivity_time
     # If searching for silver token and it's close (upto silver_th i.e. silver threshold), grab it.
     if engage:
         if R.grab():
@@ -187,6 +273,7 @@ def grab_release(token_code):
             # Add the token code of the silver token to displaced_tokens dict
             # so that it's not touched again
             displaced_tokens['silver'].append(token_code)
+            inactivity_time = 0
     # If searching for gold token and it's close (upto gold_th i.e. gold threshold)...
     # ...release the grabbed silver token
     else:
@@ -199,6 +286,8 @@ def grab_release(token_code):
             if not moveback_flag:
                 print("Released near nearest gold token.\nBacking up a bit, gracefully.")
                 print("-" * 78)
+                # reset the inactivity time
+                inactivity_time = 0
             moveback_flag = True
             not_seen_flag = already_seen_flag = unmoved_flag = False
     # Flip the engage flag upon grabbing or releasing of silver token
@@ -212,18 +301,15 @@ def end_task():
     """
     global done_flag
     # Drive backwards and rejoice.
-    drive(-90, 1.0)
-    turn(85, 0.8)
-    turn(-85, 0.8)
+    # drive(-90, 1.0)
+    turn(100, 0.1)
+    turn(-105, 0.1)
     if not done_flag:
         print("Job is done.")
         print("Delivered", len(displaced_tokens['silver']), "tokens.")
         print("-" * 31, "EXECUTION ENDS", "-" * 31)
         done_flag = True
-        # end = time.time()
-        # exec_time = end - start
-        # with open('execution_time.txt', 'w') as f:
-        #     f.write(str(exec_time))
+
 
 
 def reset_variables():
@@ -263,7 +349,7 @@ def main():
     grabs it, then drives toward closest gold token and releases the silver token, making pairs.
     Continues until all tokens are paired.
     """
-    global unmoved_flag, search_time
+    global unmoved_flag, search_time, inactivity_time, fail_alert
 
     # Reset all variables
     reset_variables()
@@ -281,12 +367,6 @@ def main():
         if token_info_dict['token_code'] == -1:
             # The parameter 1 is to mark this particular case.
             continue_search(token_info_dict['token_color'], token_info_dict['rot_obj'], 1)
-
-        # If all tokens have been dealt with (if task is complete), rejoice and exit.
-        elif (len(displaced_tokens['silver']) == total_tokens/2 and
-                len(displaced_tokens['gold']) == total_tokens/2):
-            end_task()
-            break
 
         # If a [silver or gold] token has already been displaced, ignore it and continue search.
         # This is useful because there may be tokens with same code but different colors.
@@ -312,10 +392,22 @@ def main():
         
         search_end_time = time.time()
         search_time += search_end_time - search_start_time
+        inactivity_time += search_end_time - search_start_time
+
+        if inactivity_time > inactive_limit:
+            if check_silver_near_gold(0.3):
+                end_task()
+                break
+            else:
+                print("Failed Completion - did not deliver properly")
+                print("Exiting...")
+                fail_alert = -1
+                break
 
         if search_time > 90:
-            print("Failed Completion")
+            print("Failed Completion - did not finish")
             print("Exiting...")
+            fail_alert = 0
             break
         
 
@@ -325,4 +417,9 @@ starting_time = time.time()
 main()
 ending_time = time.time()
 execution_time = ending_time - starting_time
-write_execution_times(execution_time)
+if fail_alert == -1:
+    write_execution_times(100)
+elif fail_alert == 0:
+    write_execution_times(90)
+else:
+    write_execution_times(execution_time - invalidity_period)
