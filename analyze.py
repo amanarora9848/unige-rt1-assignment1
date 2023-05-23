@@ -36,7 +36,7 @@ def calc_metrics():
             all_runs = [row for row in reader]
 
             # Get all successful runs (with values not equal to 90 or 100)
-            successful_runs = [row for row in all_runs if float(row[0]) != 90 and float(row[0]) != 100]
+            successful_runs = [row for row in all_runs if float(row[0]) not in {90, 100, 110}]
             
             # Calculate the failed runs (total rows - length of successful runs)
             failed_runs = len(all_runs) - len(successful_runs)

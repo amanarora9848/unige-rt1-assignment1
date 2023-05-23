@@ -15,7 +15,7 @@ It contains the logic to drive the robot around and deliver the "silver" boxes t
 """
 
 
-########### CONTROL PARAMETERS ###########
+######################################### CONTROL PARAMETERS #########################################
 
 # Define time step variable
 time_step = 1  # Adjust this value to control the speed of the robot
@@ -25,7 +25,7 @@ inactive_limit = 5  # Inactivity time limit (in seconds), adjust as needed
 # Preference for dynamic or static speed settings for the robot
 want_dynamic_speed = True
 
-#########################################
+#######################################################################################################
 
 
 a_th = 2.0
@@ -49,12 +49,12 @@ displaced_tokens = {
 containing the token codes which have been dealt with
 """
 
-seen_markers = []
-
 time_to_see_markers = False
 
 # Flags for clean print statements - make each set of statements to be displayed once per activity.
 not_seen_flag = done_flag = already_seen_flag = unmoved_flag = moveback_flag = False
+
+################################################ TIMERS #####################################################
 
 # search time for the robot to end the task if it takes too long
 search_time = 0
@@ -65,9 +65,16 @@ inactivity_time = 0
 # time period while robot keeps searching for pairs far away from each other
 invalidity_period = 0
 
-# numeric flag to check if the robot has failed and in what way
-fail_alert = 1
+time_before_grab = 0
 
+#############################################################################################################
+
+# apparent completion error distance check thresholds
+error_dist = 0.35
+error_theta_th = 15
+
+# numeric flag to check if the robot has failed and in what way
+fail_alert = 42
 
 def drive(speed, seconds):
     """
@@ -97,15 +104,12 @@ def turn(speed, seconds):
     R.motors[0].m1.power = 0
 
 
-def check_silver_near_gold(tolerance):
+def check_silver_near_gold():
     """
     Checks if all displaced gold and silver tokens are within a certain tolerance of each other.
 
-    Args:
-        tolerance (float): The range within which we are looking for a match.
-
     Returns:
-        bool: True if all displaced gold tokens are paired with a silver token, False otherwise.
+        bool: True if all displaced gold tokens are paired correctly with a silver token, False otherwise.
     """
     global invalidity_period
     invalidity_period_start = time.time()
@@ -119,8 +123,11 @@ def check_silver_near_gold(tolerance):
             for gold_token in gold_tokens:
                 if gold_token.info.code in displaced_tokens['gold'] and silver_token.info.code in displaced_tokens['silver']:
                     if displaced_tokens['gold'].index(gold_token.info.code) == displaced_tokens['silver'].index(silver_token.info.code):
-                        if abs(gold_token.dist - silver_token.dist) > tolerance:
+                        if abs(gold_token.dist - silver_token.dist) > error_dist or abs(gold_token.rot_y - silver_token.rot_y) > error_theta_th:
                             print("FAILURE FOUND!!!!!!!!!!!!!!!!!")
+                            print("Tokens concerned: Gold", gold_token.info.code, " || Silver ", silver_token.info.code)
+                            print("Distance difference:", abs(gold_token.dist - silver_token.dist))
+                            print("Orientation difference:", abs(gold_token.rot_y - silver_token.rot_y))
                             return False
     invalidity_period_end = time.time()
     invalidity_period = invalidity_period_end - invalidity_period_start
@@ -211,7 +218,7 @@ def continue_search(token_color, orientation, token_search_condition, token_code
           token_search_condition(int): 1 for no token found case, while 2 when spotted token is already arranged.
           token_code(int): Token code of the token in observation.
     """
-    global not_seen_flag, already_seen_flag, seen_markers
+    global not_seen_flag, already_seen_flag
 
     if token_search_condition == 1:
         if not not_seen_flag:
@@ -239,12 +246,14 @@ def grab_release(token_code):
     Function to grab the nearest seen silver token and release it near the nearest seen gold token.
     Args: token-code(int): Spotted token code.
     """
-    global engage, moveback_flag, unmoved_flag, inactivity_time
+    global engage, moveback_flag, unmoved_flag, inactivity_time, time_before_grab
     # If searching for silver token and it's close (upto silver_th i.e. silver threshold), grab it.
     if engage:
         if R.grab():
             print("Grabbed! Delivering...")
             print("-" * 78)
+            # reset the grab timer
+            time_before_grab = 0
             # Add the token code of the silver token to displaced_tokens dict
             # so that it's not touched again
             displaced_tokens['silver'].append(token_code)
@@ -324,7 +333,7 @@ def main():
     grabs it, then drives toward closest gold token and releases the silver token, making pairs.
     Continues until all tokens are paired.
     """
-    global unmoved_flag, search_time, inactivity_time, fail_alert
+    global unmoved_flag, search_time, inactivity_time, time_before_grab, fail_alert
 
     # Reset all variables
     reset_variables()
@@ -368,9 +377,16 @@ def main():
         search_end_time = time.time()
         search_time += search_end_time - search_start_time
         inactivity_time += search_end_time - search_start_time
+        time_before_grab += search_end_time - search_start_time
+
+        if time_before_grab > 20:
+            print("Failed Completion - got stuck in a search loop")
+            print("Exiting...")
+            fail_alert = 1
+            break
 
         if inactivity_time > inactive_limit:
-            if check_silver_near_gold(0.35):
+            if check_silver_near_gold():
                 end_task()
                 break
             else:
@@ -395,6 +411,8 @@ execution_time = ending_time - starting_time
 if fail_alert == -1:
     write_execution_times(100)
 elif fail_alert == 0:
+    write_execution_times(110)
+elif fail_alert == 1:
     write_execution_times(90)
 else:
     write_execution_times(execution_time - invalidity_period)
