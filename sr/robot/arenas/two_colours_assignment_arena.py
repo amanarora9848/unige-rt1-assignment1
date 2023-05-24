@@ -2,7 +2,6 @@ from __future__ import division
 
 from math import cos, pi, sin
 
-import random # New
 import pygame
 from pygame.rect import Rect
 
@@ -14,7 +13,7 @@ HOME_ZONE_SIZE = 2.5
 
 INNER_CIRCLE_RADIUS = 0.9
 OUTER_CIRCLE_RADIUS = 2.4  # Some tokens are at 1200ish, others at 1270ish
-TOKENS_PER_CIRCLE = 6
+TOKENS_PER_CIRCLE = 6 # default 6
 PEDESTAL_COLOR = (0x80, 0x80, 0x80)
 
 
@@ -65,10 +64,7 @@ class TwoColoursAssignmentArena(Arena):
                     rotation_amount = 0
                 token = token_type(self, number_offset + i)
                 angle = angle_offset + (2 * pi / TOKENS_PER_CIRCLE) * i
-                # angle = random.uniform(0, 2*pi) # New
                 token.location = (cos(angle) * radius, sin(angle) * radius)
-                # token_radius = random.uniform(INNER_CIRCLE_RADIUS, OUTER_CIRCLE_RADIUS) # New
-                # token.location = (cos(angle) * token_radius, sin(angle) * token_radius) # New
                 token.heading = rotation_amount
                 self.objects.append(token)
 

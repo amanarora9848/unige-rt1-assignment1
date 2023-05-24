@@ -49,6 +49,8 @@ displaced_tokens = {
 containing the token codes which have been dealt with
 """
 
+observed_silver_tokens = []
+
 time_to_see_markers = False
 
 # Flags for clean print statements - make each set of statements to be displayed once per activity.
@@ -111,24 +113,35 @@ def check_silver_near_gold():
     Returns:
         bool: True if all displaced gold tokens are paired correctly with a silver token, False otherwise.
     """
-    global invalidity_period
+    global invalidity_period, observed_silver_tokens
     invalidity_period_start = time.time()
+
     while True:
         turn(80, 1)
         gold_tokens = [marker for marker in R.see() if marker.info.marker_type == 'gold-token']
         silver_tokens = [marker for marker in R.see() if marker.info.marker_type == 'silver-token']
+        
+        # Get out of the loop if the robot has been checking for too long
         if time.time() - invalidity_period_start > 7:
             break
-        for silver_token in silver_tokens:
-            for gold_token in gold_tokens:
-                if gold_token.info.code in displaced_tokens['gold'] and silver_token.info.code in displaced_tokens['silver']:
-                    if displaced_tokens['gold'].index(gold_token.info.code) == displaced_tokens['silver'].index(silver_token.info.code):
-                        if abs(gold_token.dist - silver_token.dist) > error_dist or abs(gold_token.rot_y - silver_token.rot_y) > error_theta_th:
-                            print("FAILURE FOUND!!!!!!!!!!!!!!!!!")
-                            print("Tokens concerned: Gold", gold_token.info.code, " || Silver ", silver_token.info.code)
-                            print("Distance difference:", abs(gold_token.dist - silver_token.dist))
-                            print("Orientation difference:", abs(gold_token.rot_y - silver_token.rot_y))
-                            return False
+
+        if len(displaced_tokens['silver']) < len(observed_silver_tokens):
+            print("NOT ALL TOKENS DISPLACED!!!!!!!!!")
+            return False
+        else:
+            print("ALL TOKENS DISPLACED. CHECKING FOR DELIVERY ERRORS...")
+            # Check to see that all silver tokens are close enough to respective gold tokens
+            for silver_token in silver_tokens:
+                for gold_token in gold_tokens:
+                    if gold_token.info.code in displaced_tokens['gold'] and silver_token.info.code in displaced_tokens['silver']:
+                        if displaced_tokens['gold'].index(gold_token.info.code) == displaced_tokens['silver'].index(silver_token.info.code):
+                            if abs(gold_token.dist - silver_token.dist) > error_dist or abs(gold_token.rot_y - silver_token.rot_y) > error_theta_th:
+                                print("FAILURE FOUND!!!!!!!!!!!!!!!!!")
+                                print("Tokens concerned: Gold", gold_token.info.code, " || Silver ", silver_token.info.code)
+                                print("Distance difference:", abs(gold_token.dist - silver_token.dist))
+                                print("Orientation difference:", abs(gold_token.rot_y - silver_token.rot_y))
+                                return False
+
     invalidity_period_end = time.time()
     invalidity_period = invalidity_period_end - invalidity_period_start
     return True
@@ -146,6 +159,7 @@ def locate_token(flag):
              token color (string): retrieve the color of the token ("token" if no token detected)
              distance_threshold(float): respective threshold for closest distance, wrt token color (-1 if no token detected)
     """
+    global observed_silver_tokens
 
     dist = 100
     current_token_code = 0
@@ -165,6 +179,9 @@ def locate_token(flag):
             rot_y = token.rot_y
             current_token_code = token.info.code
             token_color = token.info.marker_type
+
+        if token.info.code not in observed_silver_tokens and token.info.marker_type == MARKER_TOKEN_SILVER:
+            observed_silver_tokens.append(token.info.code)
 
     if dist == 100:
         token_info_dict = {
@@ -187,7 +204,7 @@ def locate_token(flag):
 
 def drive_to_deliver(distance, orientation):
     """
-    Function to drive robot towards the token.
+    Function to drive robot towards the token - specific set speeds.
     Args: distance(float): Distance to the respective token.
           orientation(float): Orientation of robot w.r.t. token.
     """
@@ -207,8 +224,6 @@ def drive_to_deliver(distance, orientation):
         elif orientation <= abs(a_th):
             drive((distance * 70)/(0.05), 0.05)  # Dynamic linear speed setting
 
-
-all_tokens_checked = 0
 
 def continue_search(token_color, orientation, token_search_condition, token_code='0'):
     """
@@ -295,20 +310,6 @@ def end_task():
         done_flag = True
 
 
-
-def reset_variables():
-    global engage, not_seen_flag, done_flag, already_seen_flag, unmoved_flag, moveback_flag
-    engage = True
-    not_seen_flag = done_flag = already_seen_flag = unmoved_flag = moveback_flag = False
-    search_time = 0
-
-    global displaced_tokens
-    displaced_tokens = {
-        'silver': [],
-        'gold': []
-    }
-
-
 def write_execution_times(exec_time):
     """
     Function to write the execution times to a csv file.
@@ -334,9 +335,6 @@ def main():
     Continues until all tokens are paired.
     """
     global unmoved_flag, search_time, inactivity_time, time_before_grab, fail_alert
-
-    # Reset all variables
-    reset_variables()
 
     print("-" * 30, "EXECUTION BEGINS", "-" * 30)
 
@@ -379,12 +377,14 @@ def main():
         inactivity_time += search_end_time - search_start_time
         time_before_grab += search_end_time - search_start_time
 
+        # Robot stuck failsafe
         if time_before_grab > 20:
             print("Failed Completion - got stuck in a search loop")
             print("Exiting...")
             fail_alert = 1
             break
 
+        # Robot not busy anymore check
         if inactivity_time > inactive_limit:
             if check_silver_near_gold():
                 end_task()
@@ -394,9 +394,10 @@ def main():
                 print("Exiting...")
                 fail_alert = -1
                 break
-
+        
+        # Script Failsafe
         if search_time > 90:
-            print("Failed Completion - did not finish")
+            print("Failed Completion - script failsafe")
             print("Exiting...")
             fail_alert = 0
             break
