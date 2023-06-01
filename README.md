@@ -1,4 +1,4 @@
-Research Track 1 - Assignment 1 (UniGe)
+# Research Track 1 - Assignment 1 (UniGe)
 
 ### The assignment contains two main branches:
 - This branch, `master`, contains the code for the first assignment of the course "Research Track 1"
