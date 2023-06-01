@@ -61,11 +61,11 @@
     ```
     This helps in running the assignment in parallel, and collecting data for analysis.
 
-In our study, we aimed to compare the performances of different implementations of the **Assignment 1** of the course: ***Research Track 1***, specifically, implementations A (self-made), K (by colleague Kazuto), and L (by colleague Lucas P.), based on their execution times and success rates.
+In our study, we aimed to compare the performances of different implementations of the **Assignment 1** of the course: ***Research Track 1***, specifically, implementations A (self-made), K (by colleague Kazuto), and L (by colleague Lucas P.), based on their execution times and success rates. At a time, implementation A is either compared with K or L, for evaluating differnt results. The results are presented in the following sections.
 
 ##### Hypotheses presented (stated crudely, formally stated in the following sections):
-1.  Implementation A and Implementation K have the same execution times.
-2. Implementation A has more success rate of execution (elaborate in desc.: tokens absolutely correctly delivered) than Implementation L.
+1. Implementation A and Implementation K have the same execution times.
+2. Implementation A has a lower success rate than Implementation L.
 
 ##### Data Collection:
 1. The data of **30** successful runs in randomized environment was collected for both implementations A and K, and the execution times were recorded in the files `data/ImplementationK/randomenv_exec_timesA.csv` and `data/ImplementationK/randomenv_exec_timesK.csv`.
@@ -464,6 +464,8 @@ nobs = len(exec_timesA)
 
 # run the Z-test
 zstat, pval = proportions_ztest([success_count_A, success_count_L], [nobs, nobs], alternative='smaller')
+# This 'smaller' alternative means that this is a one-tailed test where the alternative hypothesis 
+# is that the proportion of successful executions for algorithm A is less than that for algorithm L.
 
 print("z-statistic:", zstat)
 print("p-value:", pval)
@@ -502,9 +504,9 @@ plt.show()
 After performing a one-tailed z-test for the difference of two proportions, the results were a z-statistic of -4.26 and a p-value of approximately 0.00001. This provides strong statistical evidence suggesting that Implementation A has a lower success rate than Implementation L.
 
 
-## Analyzing the normality assumptions:
+### Analyzing the normality assumptions:
 
-### Shapiro-Wilk Test for Normality:
+#### Shapiro-Wilk Test for Normality:
 
 To ensure the validity of our t-test in the first hypothesis, we needed to confirm that our data - the execution times for Implementation K, followed a normal distribution. For this, we used the Shapiro-Wilk test.
 
@@ -512,12 +514,12 @@ In this test, the null hypothesis states that the data was drawn from a normal d
 
 This normality check was vital to ensure the appropriateness of using a t-test, as t-tests assume normal distribution of data.
 
-#### Test Result:
+##### Test Result:
 The Shapiro-Wilk test result indicated that our sample looks Gaussian, meaning we failed to reject the null hypothesis. Therefore, the t-test was an appropriate method for comparing the execution times.
 
 <hr>
 
-### Binomial Assumption Check for Proportions:
+#### Binomial Assumption Check for Proportions:
 
 In our second hypothesis, we were comparing success rates between Implementation A and L. Before performing a z-test for proportions, we needed to confirm the binomial assumption for these proportions.
 
@@ -527,7 +529,7 @@ Therefore, we performed a check to see if the product of the sample size and the
 
 For Implementation A, we found that both np and n(1-p) were greater than 5, suggesting that the binomial assumption holds. Similarly for Implementation L, both np and n(1-p) were greater than 5, validating the binomial assumption. Thus, the use of a z-test was appropriate for our analysis.
 
-#### Test Result:
+##### Test Result:
 We can conclude that the binomial assumption holds for both Implementations A and L. This validation confirms the appropriateness of the subsequent Z-test for comparing the success rates of these two implementations.
 
 # Statistical Analysis Report (Summary)
@@ -549,6 +551,4 @@ We performed a one-tailed z-test for proportions to test these hypotheses. The z
 The z-test produced a z-statistic of -4.26 and a p-value of approximately 1.00e-05. As this p-value is significantly below the standard 0.05 threshold, we reject the null hypothesis, providing strong evidence that Implementation A has a lower success rate than Implementation L. This result aligns with our initial belief and confirms that, in terms of success rates, Implementation L outperforms Implementation A.
 
 In conclusion, through our statistical analysis, we have found significant differences in performance between the algorithm implementations, both in terms of execution times and success rates. These findings provide valuable insights for future development and optimization efforts of implementation A.
-
-
 
