@@ -60,7 +60,7 @@
                             Number of batches after which to calculate metrics.
     ```
 
-In our study, we aimed to compare the performances of different implementations of the **Assignment 1** of the course: ***Research Track 1***, specifically, implementations `A` (self-made), `K` (by a colleague [here](https://github.com/kazu610/3rd_assignment_RT2)), and `L` (by another colleague [here](https://github.com/Lucas-Pardo/RT2_Assignment_3)), based on their execution times and success rates. At a time, implementation A is either compared with K or L, for evaluating differnt results. The results are presented in the following sections.
+In my study, I aimed to compare the performances of different implementations of the **Assignment 1** of the course: ***Research Track 1***, specifically, implementations `A` (self-made), `K` (by a colleague [here](https://github.com/kazu610/3rd_assignment_RT2)), and `L` (by another colleague [here](https://github.com/Lucas-Pardo/RT2_Assignment_3)), based on their execution times and success rates. At a time, implementation A is either compared with K or L, for evaluating differnt results. The results are presented in the following sections.
 
 ##### Hypotheses presented (stated crudely, formally stated in the following sections):
 1. Whether Implementation A and Implementation K have different execution times, specifically if Implementation A is faster.
@@ -70,11 +70,11 @@ In our study, we aimed to compare the performances of different implementations 
 1. The data of **30** successful runs in randomized environment was collected for both implementations A and K after formulating the hypothesis 1, and the execution times were recorded in the files `data/ImplementationK/randomenv_exec_timesA.csv` and `data/ImplementationK/randomenv_exec_timesK.csv`.
 2. The data of **100** runs in randomized environment was collected for both implementations L and A after formulating the hypothesis 2, and the execution times were recorded in the files `data/ImplementationL/random_10.txt` and `data/ImplementationA/execution_times_randomized_env.csv`.
 
-In the statistical analyses conducted below, we adopt a significance level (alpha) of 0.05. This signifies that we'd be willing to accept a 5% risk of incorrectly rejecting the null hypothesis if it were indeed true (Type I error). 
+In the statistical analyses conducted below, I adopt a significance level (alpha) of 0.05. This signifies that I'd be willing to accept a 5% risk of incorrectly rejecting the null hypothesis if it were indeed true (Type I error). 
 
 Consequently, any p-value equal to or smaller than 0.05 provides sufficient evidence to reject the null hypothesis in favor of the alternative hypothesis.
 
-To perform some standardized tests in statictics, we can choose the python library `scipy.stats` which provides a wide range of statistical tests and functions. The documentation for the library can be found [here](https://docs.scipy.org/doc/scipy/reference/stats.html).
+To perform some standardized tests in statictics, I chose the python library `scipy.stats` which provides a wide range of statistical tests and functions. The documentation for the library can be found [here](https://docs.scipy.org/doc/scipy/reference/stats.html).
 
 
 ```python
@@ -330,13 +330,13 @@ plt.show()
     
 
 
-Our 'analysis' question was to determine whether the execution time for Algorithm A was faster than Algorithm K. To test this, we stated our null hypothesis as 'Algorithm A does not have significantly faster execution times than Algorithm K.'
+My 'analysis' question was to determine whether the execution time for Algorithm A was faster than Algorithm K.
 
-We collected data on the execution times for both algorithms on randomized arena with 6 tokens and performed a one-tailed paired t-test on the data. This type of test was chosen because it allows us to compare the means of the same group or item under two separate scenarios (running Algorithm A and Algorithm K).
+I collected data on the execution times for both algorithms on randomized arena with 6 tokens and performed a one-tailed paired t-test on the data. This type of test was chosen because it allows us to compare the means of the same group or item under two separate scenarios (running Algorithm A and Algorithm K).
 
-The result of the t-test yielded a t-statistic of -21.20 and a one-tailed p-value of approximately 1.69e-19. In statistical terms, a p-value less than 0.05 typically indicates strong evidence against the null hypothesis. Therefore, we reject our null hypothesis and conclude that there is significant evidence to suggest that Algorithm A has faster execution times than Algorithm K.
+The result of the t-test yielded a t-statistic of -21.20 and a one-tailed p-value of approximately 1.69e-19. In statistical terms, a p-value less than 0.05 typically indicates strong evidence against the null hypothesis. Therefore, I reject my null hypothesis and conclude that there is significant evidence to suggest that Algorithm A has faster execution times than Algorithm K.
 
-These results indicate that, under the conditions of our testing environment, Implementation A performs faster than Implementation K.
+These results indicate that, under the conditions of my testing environment, Implementation A performs faster than Implementation K.
 
 ### Summarizing:
 
@@ -488,7 +488,7 @@ else:
 
 Again, most of this work was made easy by using the statsmodels library in python. The function `statsmodels.stats.proportion.proportions_ztest()` was used to perform the proportions Z-test. The documentation for the same can be found [here](https://www.statsmodels.org/dev/generated/statsmodels.stats.proportion.proportions_ztest.html).  The function returns the Z-statistic and the p-value.
 
-A thing to note could be that in our scenario, each execution of an an implementation under specific conditions (randomized environment) would most likely result in different execution times. Thus, we cannot know the true population mean and variance - these are parameters of the underlying distribution of execution times, and typically, we can't calculate these exactly because we can't measure the execution time for every possible run of the algorithm under every possible environment.
+A thing to note could be that in my scenario, each execution of an an implementation under specific conditions (randomized environment) would most likely result in different execution times. Thus, we cannot know the true population mean and variance - these are parameters of the underlying distribution of execution times, and typically, we can't calculate these exactly because we can't measure the execution time for every possible run of the algorithm under every possible environment.
 
 Rather, we estimate these population parameters (mean and variance) from our sample data. The sample mean and sample variance are used as estimates of their respective population parameters.
 
@@ -527,7 +527,7 @@ print("p-value:", pval)
     p-value: 1.0039328062132435e-05
 
 
-Given the very small p-value, we reject the null hypothesis in favor of the alternative hypothesis at the 0.05 significance level. There is strong statistical evidence suggesting that Implementation A has a lower success rate than Implementation L. The negative z-statistic indicates that the success rate of Implementation A is lower than that of Implementation L.
+Given the very small p-value, I reject the null hypothesis in favor of the alternative hypothesis at the 0.05 significance level. There is strong statistical evidence suggesting that Implementation A has a lower success rate than Implementation L. The negative z-statistic indicates that the success rate of Implementation A is lower than that of Implementation L.
 
 
 ```python
@@ -560,9 +560,9 @@ After performing a one-tailed z-test for the difference of two proportions, the 
 
 #### Shapiro-Wilk Test for Normality:
 
-To ensure the validity of our t-test in the first hypothesis, we needed to confirm that our data - the execution times for Implementation K, followed a normal distribution. For this, we used the Shapiro-Wilk test.
+To ensure the validity of my t-test in the first hypothesis, I needed to confirm that my data - the execution times for Implementation K, followed a normal distribution. For this, I used the Shapiro-Wilk test.
 
-In this test, the null hypothesis states that the data was drawn from a normal distribution. We set our significance level at 0.05. If the resulting p-value from the test was greater than 0.05, we would not reject the null hypothesis, implying that the data does not significantly deviate from a normal distribution. However, if the p-value was less than 0.05, we would reject the null hypothesis, indicating that the data does not follow a normal distribution.
+In this test, the null hypothesis states that the data was drawn from a normal distribution. I set the significance level at 0.05. If the resulting p-value from the test was greater than 0.05, we would not reject the null hypothesis, implying that the data does not significantly deviate from a normal distribution. However, if the p-value was less than 0.05, we would reject the null hypothesis, indicating that the data does not follow a normal distribution.
 
 This normality check was vital to ensure the appropriateness of using a t-test, as t-tests assume normal distribution of data.
 
@@ -573,13 +573,13 @@ The Shapiro-Wilk test result indicated that our sample looks Gaussian, meaning w
 
 #### Binomial Assumption Check for Proportions:
 
-In our second hypothesis, we were comparing success rates between Implementation A and L. Before performing a z-test for proportions, we needed to confirm the binomial assumption for these proportions.
+In our second hypothesis, I was comparing success rates between Implementation A and L. Before performing a z-test for proportions, I needed to confirm the binomial assumption for these proportions.
 
 For a binomial distribution to approximate a normal distribution (**central limit theorem**), the sample size needs to be large enough that both np and n(1-p) are greater than 5, where n is the sample size and p is the proportion of interest (here, the success rate). Satisfying this condition ensures that the binomial distribution of the data can be approximated by a normal distribution, which is a key assumption for the z-test.
 
-Therefore, we performed a check to see if the product of the sample size and the success rate, and the product of the sample size and the failure rate, were both greater than 5 for Implementations A and L. This step was crucial for validating the use of a z-test in our analysis.
+Therefore, I performed a check to see if the product of the sample size and the success rate, and the product of the sample size and the failure rate, were both greater than 5 for Implementations A and L. This step was crucial for validating the use of a z-test in my analysis.
 
-For Implementation A, we found that both np and n(1-p) were greater than 5, suggesting that the binomial assumption holds. Similarly for Implementation L, both np and n(1-p) were greater than 5, validating the binomial assumption. Thus, the use of a z-test was appropriate for our analysis.
+For Implementation A, I found that both np and n(1-p) were greater than 5, suggesting that the binomial assumption holds. Similarly for Implementation L, both np and n(1-p) were greater than 5, validating the binomial assumption. Thus, the use of a z-test was appropriate for my analysis.
 
 ##### Test Result:
 We can conclude that the binomial assumption holds for both Implementations A and L. This validation confirms the appropriateness of the subsequent Z-test for comparing the success rates of these two implementations.
@@ -588,20 +588,20 @@ We can conclude that the binomial assumption holds for both Implementations A an
 
 ## Hypothesis 1: Execution Times - Implementation A vs Implementation K
 
-We first tried to determine whether Implementation A has significantly faster execution times than Implementation K. The null hypothesis for this test was stated as "Implementation A and Implementation K have the same execution times". The alternative hypothesis was "Implementation A has faster execution times than Implementation K".
+I first tried to determine whether Implementation A has significantly faster execution times than Implementation K. The null hypothesis for this test was stated as "Implementation A and Implementation K have the same execution times". The alternative hypothesis was "Implementation A has faster execution times than Implementation K".
 
-We chose a paired t-test for this comparison, given that we had paired observations of execution times for the same tasks under two different conditions (Implementations A and K). The paired t-test compares the means of the paired observations, providing a direct way to see if there's a significant difference between them.
+I chose a paired t-test for this comparison, given that I had paired observations of execution times for the same tasks under two different conditions (Implementations A and K). The paired t-test compares the means of the paired observations, providing a direct way to see if there's a significant difference between them.
 
-The t-test yielded a t-statistic of -21.20 and a one-tailed p-value of approximately 1.69e-19. Given that this p-value is significantly below the 0.05 threshold, we reject our null hypothesis. This provides strong statistical evidence to suggest that Implementation A has faster execution times than Implementation K. Hence, under the conditions of our test, we infer that Implementation A performs faster than Implementation K.
+The t-test yielded a t-statistic of -21.20 and a one-tailed p-value of approximately 1.69e-19. Given that this p-value is significantly below the 0.05 threshold, I reject my null hypothesis. This provides strong statistical evidence to suggest that Implementation A has faster execution times than Implementation K. Hence, under the conditions of my test, I infer that Implementation A performs faster than Implementation K.
 
 ## Hypothesis 2: Success Rates - Implementation A vs Implementation L
 
-The second part of our analysis focused on comparing the success rates of Implementation A and Implementation L. Given that we had a prior belief that Implementation A might have a lower success rate, we defined our null hypothesis as "Implementation A and Implementation L have the same success rates". The alternative hypothesis was "Implementation A has a lower success rate than Implementation L".
+The second part of my analysis focused on comparing the success rates of Implementation A and Implementation L. Given that I had a prior belief that Implementation A might have a lower success rate, I defined my null hypothesis as "Implementation A and Implementation L have the same success rates". The alternative hypothesis was "Implementation A has a lower success rate than Implementation L".
 
-We performed a one-tailed z-test for proportions to test these hypotheses. The z-test was appropriate because we were comparing proportions (success rates), and it could effectively handle the large sample sizes that we had.
+I performed a one-tailed z-test for proportions to test these hypotheses. The z-test was appropriate because I was comparing proportions (success rates), and it could effectively handle the large sample sizes that I had.
 
-The z-test produced a z-statistic of -4.26 and a p-value of approximately 1.00e-05. As this p-value is significantly below the standard 0.05 threshold, we reject the null hypothesis, providing strong evidence that Implementation A has a lower success rate than Implementation L. This result aligns with our initial belief and confirms that, in terms of success rates, Implementation L outperforms Implementation A.
+The z-test produced a z-statistic of -4.26 and a p-value of approximately 1.00e-05. As this p-value is significantly below the standard 0.05 threshold, I reject the null hypothesis, providing strong evidence that Implementation A has a lower success rate than Implementation L. This result aligns with my initial belief and confirms that, in terms of success rates, Implementation L outperforms Implementation A.
 
 ## Conclusion:
 
-Through our statistical analysis, we have found significant differences in performance between the algorithm implementations, both in terms of execution times and success rates. These findings provide valuable insights for future development and optimization efforts of implementation A.
+Through this statistical analysis, I have found significant differences in performance between the algorithm implementations, both in terms of execution times and success rates. These findings provide valuable insights for future development and optimization efforts of implementation A.
