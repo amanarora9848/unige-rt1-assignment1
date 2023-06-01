@@ -74,7 +74,7 @@ In the statistical analyses conducted below, we adopt a significance level (alph
 
 Consequently, any p-value equal to or smaller than 0.05 provides sufficient evidence to reject the null hypothesis in favor of the alternative hypothesis.
 
-To perform some standardized tests in statictics, I choose to use the python library `scipy.stats` which provides a wide range of statistical tests and functions. The documentation for the library can be found [here](https://docs.scipy.org/doc/scipy/reference/stats.html).
+To perform some standardized tests in statictics, we can choose the python library `scipy.stats` which provides a wide range of statistical tests and functions. The documentation for the library can be found [here](https://docs.scipy.org/doc/scipy/reference/stats.html).
 
 
 ```python
@@ -494,7 +494,7 @@ Rather, we estimate these population parameters (mean and variance) from our sam
 
 For the proportions Z-test, we aren't directly dealing with population means or variances, but instead with the proportions of the successes in two groups. The population parameters in this case would be the true proportions of successes, which again, we estimate from our sample data.
 
-As far as the validity of the test is concerned, the sample size is large enough for the Central Limit Theorem to hold. The sample size is large enough for the normal approximation to the binomial distribution to be valid. 
+As far as the validity of the test is concerned, it would suffice to state that the following conditions are met: 
 1. **Random sampling**: the data was collected randomly - 100 runs out of several possible runs.
 2. **Large sample size**: the sample size is 100, which is much greater than 30.
 3. **Normality**: sample size is large so central limit theorem applies (distribution of sample mean is approximately normal).
