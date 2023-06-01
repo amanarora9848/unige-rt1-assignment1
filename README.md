@@ -1,4 +1,9 @@
 Research Track 1 - Assignment 1 (UniGe)
+
+### The assignment contains two main branches:
+- This branch, `master`, contains the code for the first assignment of the course "Research Track 1"
+- The branch [`rt2_analysis`](https://github.com/amanarora9848/unige-rt1-assignment1/tree/rt2_analysis) contains the code for the second assignment of the course "Research Track 2", which is the statistical analysis based on performance of different implementations in a randomized token arena.
+
 =======================================
 
 ## About Python Robotics Simulator
