@@ -96,6 +96,8 @@ Let $μ_A$ denote the mean execution time of Implementation A, and let $μ_K$ de
 
 ##### Load Data for testing hypothesis 1:
 
+Data for implementations `A` and `K` were collected after running them in parallel for required number of times, and getting 30 successful runs. (By successful runs, we mean that the robot was able to deliver all the tokens to their respective gold tokens, without getting stuck in a loop, or without failing to reach any token.)
+
 
 ```python
 # Load data
@@ -164,13 +166,13 @@ plt.show()
 
 
     
-![png](README_files/README_10_0.png)
+![png](README_files/README_11_0.png)
     
 
 
 
     
-![png](README_files/README_10_1.png)
+![png](README_files/README_11_1.png)
     
 
 
@@ -257,7 +259,7 @@ plt.show()
 
 
     
-![png](README_files/README_15_1.png)
+![png](README_files/README_16_1.png)
     
 
 
@@ -324,7 +326,7 @@ plt.show()
 
 
     
-![png](README_files/README_19_0.png)
+![png](README_files/README_20_0.png)
     
 
 
@@ -430,13 +432,13 @@ plt.show()
 
 
     
-![png](README_files/README_27_0.png)
+![png](README_files/README_28_0.png)
     
 
 
 
     
-![png](README_files/README_27_1.png)
+![png](README_files/README_28_1.png)
     
 
 
@@ -486,6 +488,19 @@ else:
 
 Again, most of this work was made easy by using the statsmodels library in python. The function `statsmodels.stats.proportion.proportions_ztest()` was used to perform the proportions Z-test. The documentation for the same can be found [here](https://www.statsmodels.org/dev/generated/statsmodels.stats.proportion.proportions_ztest.html).  The function returns the Z-statistic and the p-value.
 
+A thing to note could be that in our scenario, each execution of an an implementation under specific conditions (randomized environment) would most likely result in different execution times. Thus, we cannot know the true population mean and variance - these are parameters of the underlying distribution of execution times, and typically, we can't calculate these exactly because we can't measure the execution time for every possible run of the algorithm under every possible environment.
+
+Rather, we estimate these population parameters (mean and variance) from our sample data. The sample mean and sample variance are used as estimates of their respective population parameters.
+
+For the proportions Z-test, we aren't directly dealing with population means or variances, but instead with the proportions of the successes in two groups. The population parameters in this case would be the true proportions of successes, which again, we estimate from our sample data.
+
+As far as the validity of the test is concerned, the sample size is large enough for the Central Limit Theorem to hold. The sample size is large enough for the normal approximation to the binomial distribution to be valid. 
+1. **Random sampling**: the data was collected randomly - 100 runs out of several possible runs.
+2. **Large sample size**: the sample size is 100, which is much greater than 30.
+3. **Normality**: sample size is large so central limit theorem applies (distribution of sample mean is approximately normal).
+4. **Independence**: the runs of each assignment are executed independently.
+5. **Known population variance**: for classic Z-test we'd assume to know the population variance, but in this case we don't. However, for proportions Z-test, instead, we compare the proportions of successes for the two implementations, and the formula for the Z statistic takes into account the observed proportions and the sample size, rather than requiring a known population variance.
+
 
 ```python
 from statsmodels.stats.proportion import proportions_ztest
@@ -532,7 +547,7 @@ plt.show()
 
 
     
-![png](README_files/README_35_0.png)
+![png](README_files/README_37_0.png)
     
 
 
