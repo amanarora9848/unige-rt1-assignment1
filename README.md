@@ -277,7 +277,7 @@ plt.show()
 
 6. Compare the calculated p-value with the significance level (α = 0.05). If the p-value is less than or equal to α, reject the null hypothesis, providing evidence for the alternative hypothesis.
 
-Most of this work is made easy by using the scipy library in python. The function `scipy.stats.ttest_rel()` was used to perform the paired t-test. The function returns the t-statistic and the p-value.
+Most of this work is made easy by using the scipy library in python. The function `scipy.stats.ttest_rel()` ([docs](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_rel.html)) was used to perform the paired t-test. The function returns the t-statistic and the p-value.
 
 
 ```python
@@ -398,6 +398,8 @@ print("Exec Times A: ", exec_timesA)
       61.13721609  90.          90.          90.          68.73202705]
 
 
+Note here that in both the data of `A` and `L` a value of 90, 100 or 110 would indicate a failure. This is the just the way we have implemented our algorithm.
+
 #### Visuliaze data:
 
 
@@ -428,13 +430,13 @@ plt.show()
 
 
     
-![png](README_files/README_26_0.png)
+![png](README_files/README_27_0.png)
     
 
 
 
     
-![png](README_files/README_26_1.png)
+![png](README_files/README_27_1.png)
     
 
 
@@ -482,7 +484,7 @@ else:
 
 7. Compare the calculated p-value with the significance level (α = 0.05). If the p-value is less than or equal to α, reject the null hypothesis, providing evidence for the alternative hypothesis.
 
-Again, most of this work was made easy by using the scipy library in python. The function `proportions_ztest()` from the statsmodels library was used to perform the proportions Z-test. The function returns the Z-statistic and the p-value.
+Again, most of this work was made easy by using the statsmodels library in python. The function `statsmodels.stats.proportion.proportions_ztest()` was used to perform the proportions Z-test. The documentation for the same can be found [here](https://www.statsmodels.org/dev/generated/statsmodels.stats.proportion.proportions_ztest.html).  The function returns the Z-statistic and the p-value.
 
 
 ```python
@@ -530,7 +532,7 @@ plt.show()
 
 
     
-![png](README_files/README_34_0.png)
+![png](README_files/README_35_0.png)
     
 
 
@@ -585,5 +587,6 @@ We performed a one-tailed z-test for proportions to test these hypotheses. The z
 
 The z-test produced a z-statistic of -4.26 and a p-value of approximately 1.00e-05. As this p-value is significantly below the standard 0.05 threshold, we reject the null hypothesis, providing strong evidence that Implementation A has a lower success rate than Implementation L. This result aligns with our initial belief and confirms that, in terms of success rates, Implementation L outperforms Implementation A.
 
-In conclusion, through our statistical analysis, we have found significant differences in performance between the algorithm implementations, both in terms of execution times and success rates. These findings provide valuable insights for future development and optimization efforts of implementation A.
+## Conclusion:
 
+Through our statistical analysis, we have found significant differences in performance between the algorithm implementations, both in terms of execution times and success rates. These findings provide valuable insights for future development and optimization efforts of implementation A.
