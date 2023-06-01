@@ -4,11 +4,11 @@
 
 1. The robot can now robustly and in real-time, determine if all the tokens have been reached, without having to previously state how many tokens are present in the environment.
 
-2. The assignment implementation has been subjected to stringent evaluation for failure, which includes the distance between, or the orientation difference between the tokens who have been paired (delivered) - even very small differences in my implementation (A) are treated as failres.
+2. The assignment implementation has been subjected to stringent evaluation for failure, which includes the distance between, or the orientation difference between the tokens which have been paired (delivered) - even very small differences in the implementation A are treated as failure.
 
 3. The implementation can now detect if the robot got stuck in a loop while searching for tokens and can break out of the loop, denoting a failure.
 
-4. The implementation can now detect if the robot got stuck in a loop while delivering tokens and can break out of the loop, denoting a failure.
+4. It is also possible to detect if the robot got stuck in a loop while delivering tokens and can break out of the loop, denoting a failure.
 
 5. A new function to randomize the tokens in the original circles has been implementation to provide a "randomized environment" for performing tests. The function is presented below:
     ```python
@@ -27,7 +27,7 @@
         place_token_random(INNER_CIRCLE_RADIUS)
         place_token_random(OUTER_CIRCLE_RADIUS, number_offset=TOKENS_PER_CIRCLE)
     ```
-6. In the main algorithm file (assignment.py) a few changes were made to write the data to an `execution_times.csv` file as soon as either the task was completed or a failure was detected. Times were calculated by using the `time.time()` function in different places. The function to write the data is presented below:
+6. In the main algorithm file (assignment.py) a few changes were made to write the data to a file `execution_times.csv` file as soon as either the task was completed or a failure was detected. Times were calculated by using the `time.time()` function in different places. The function to write the data is presented below:
     ```python
     def write_execution_times(exec_time):
         """
@@ -59,17 +59,22 @@
     -m METRICS_INTERVAL, --metrics_interval METRICS_INTERVAL
                             Number of batches after which to calculate metrics.
     ```
-    This helps in running the assignment in parallel, and collecting data for analysis.
 
-In our study, we aimed to compare the performances of different implementations of the **Assignment 1** of the course: ***Research Track 1***, specifically, implementations A (self-made), K (by colleague Kazuto), and L (by colleague Lucas P.), based on their execution times and success rates. At a time, implementation A is either compared with K or L, for evaluating differnt results. The results are presented in the following sections.
+In our study, we aimed to compare the performances of different implementations of the **Assignment 1** of the course: ***Research Track 1***, specifically, implementations `A` (self-made), `K` (by a colleague [here](https://github.com/kazu610/3rd_assignment_RT2)), and `L` (by another colleague [here](https://github.com/Lucas-Pardo/RT2_Assignment_3)), based on their execution times and success rates. At a time, implementation A is either compared with K or L, for evaluating differnt results. The results are presented in the following sections.
 
 ##### Hypotheses presented (stated crudely, formally stated in the following sections):
 1. Implementation A and Implementation K have the same execution times.
 2. Implementation A has a lower success rate than Implementation L.
 
 ##### Data Collection:
-1. The data of **30** successful runs in randomized environment was collected for both implementations A and K, and the execution times were recorded in the files `data/ImplementationK/randomenv_exec_timesA.csv` and `data/ImplementationK/randomenv_exec_timesK.csv`.
-2. The data of **100** runs in randomized environment was collected for both implementations L and A, and the execution times were recorded in the files `data/ImplementationL/random_10.txt` and `data/ImplementationA/execution_times_randomized_env.csv`.
+1. The data of **30** successful runs in randomized environment was collected for both implementations A and K after formulating the hypothesis 1, and the execution times were recorded in the files `data/ImplementationK/randomenv_exec_timesA.csv` and `data/ImplementationK/randomenv_exec_timesK.csv`.
+2. The data of **100** runs in randomized environment was collected for both implementations L and A after formulating the hypothesis 2, and the execution times were recorded in the files `data/ImplementationL/random_10.txt` and `data/ImplementationA/execution_times_randomized_env.csv`.
+
+In the statistical analyses conducted below, we adopt a significance level (alpha) of 0.05. This signifies that we'd be willing to accept a 5% risk of incorrectly rejecting the null hypothesis if it were indeed true (Type I error). 
+
+Consequently, any p-value equal to or smaller than 0.05 provides sufficient evidence to reject the null hypothesis in favor of the alternative hypothesis.
+
+To perform some standardized tests in statictics, I choose to use the python library `scipy.stats` which provides a wide range of statistical tests and functions. The documentation for the library can be found [here](https://docs.scipy.org/doc/scipy/reference/stats.html).
 
 
 ```python
@@ -81,7 +86,7 @@ import pandas as pd
 import seaborn as sns
 ```
 
-## Hypotheses 1:
+## Hypothesis 1:
 
 Let $μ_A$ denote the mean execution time of Implementation A, and let $μ_K$ denote the mean execution time of Implementation K.
 
@@ -89,7 +94,7 @@ Let $μ_A$ denote the mean execution time of Implementation A, and let $μ_K$ de
 
 2. **Alternative Hypothesis (H1):** The mean execution time of Implementation A is less than that of Implementation K. Formally, $μ_A < μ_K$.
 
-Load Data for testing hypothesis 1:
+##### Load Data for testing hypothesis 1:
 
 
 ```python
@@ -118,7 +123,7 @@ print("Exec Times K: ", exec_timesK)
      141.80344486 145.60325098 147.01184607 154.07681584 170.03156209]
 
 
-#### Visuliaze data:
+#### Visualiaze data:
 
 
 ```python
@@ -159,13 +164,13 @@ plt.show()
 
 
     
-![png](README_files/README_8_0.png)
+![png](README_files/README_10_0.png)
     
 
 
 
     
-![png](README_files/README_8_1.png)
+![png](README_files/README_10_1.png)
     
 
 
@@ -173,7 +178,7 @@ A nice thing to notice here is the use of the Q-Q plot, or "Quantile-Quantile" p
 
 We can clearly notice that the blue points are roughly along the red line, which means that the data is normally distributed.
 
-#### Check normality of data using Shapiro-Wilk test:
+#### Check normality of data using the **Shapiro-Wilk** test:
 
 
 ```python
@@ -188,7 +193,6 @@ if p_value > alpha:
     print('Sample A looks Gaussian (fail to reject H0)')
 else:
     print('Sample A does not look Gaussian (reject H0)')
-
 ```
 
     Sample A looks Gaussian (fail to reject H0)
@@ -207,7 +211,6 @@ if p_value > alpha:
     print('Sample K looks Gaussian (fail to reject H0)')
 else:
     print('Sample K does not look Gaussian (reject H0)')
-
 ```
 
     Sample K looks Gaussian (fail to reject H0)
@@ -246,7 +249,6 @@ plt.ylabel('Frequency')
 plt.title('Distribution of Differences in Execution Time')
 plt.grid(True)
 plt.show()
-
 ```
 
     Mean difference: -74.3133260011673
@@ -255,11 +257,27 @@ plt.show()
 
 
     
-![png](README_files/README_13_1.png)
+![png](README_files/README_15_1.png)
     
 
 
 ### Testing the First Hypothesis:
+
+#### Standard Procedure for paired T-test:
+
+1. Define the null hypothesis ($H_0$) as there being no difference in the average execution times between implementations A and K. The alternative hypothesis ($H_A$) states that the average execution time for implementation A is less than that for implementation K.
+
+2. Calculate the differences between the paired observations. Let $X_i$ and $Y_i$ be the execution times of implementations A and K respectively for the same task. Then compute the differences, $D_i = X_i - Y_i$ for all tasks.
+
+3. Compute the sample mean ($\overline{D}$) and standard deviation (s) of the differences. $\overline{D}$ is given by $\frac{\sum D_i}{n}$ and s is calculated by $\sqrt{\frac{\sum (D_i - \overline{D})^2}{n-1}}$.
+
+4. Compute the test statistic (t-statistic) using the formula: $t = \frac{\overline{D}}{s / \sqrt{n}}$, where n is the number of paired samples.
+
+5. Calculate the p-value using the computed t-statistic and degrees of freedom (n-1). Use a one-tailed test in this case, so if the calculated t-statistic is negative, halve the p-value to get a one-tailed p-value.
+
+6. Compare the calculated p-value with the significance level (α = 0.05). If the p-value is less than or equal to α, reject the null hypothesis, providing evidence for the alternative hypothesis.
+
+Most of this work is made easy by using the scipy library in python. The function `scipy.stats.ttest_rel()` was used to perform the paired t-test. The function returns the t-statistic and the p-value.
 
 
 ```python
@@ -306,11 +324,11 @@ plt.show()
 
 
     
-![png](README_files/README_16_0.png)
+![png](README_files/README_19_0.png)
     
 
 
-Our research question was to determine whether the execution time for Algorithm A was faster than Algorithm K. To test this, we stated our null hypothesis as 'Algorithm A does not have significantly faster execution times than Algorithm K.'
+Our 'analysis' question was to determine whether the execution time for Algorithm A was faster than Algorithm K. To test this, we stated our null hypothesis as 'Algorithm A does not have significantly faster execution times than Algorithm K.'
 
 We collected data on the execution times for both algorithms on randomized arena with 6 tokens and performed a one-tailed paired t-test on the data. This type of test was chosen because it allows us to compare the means of the same group or item under two separate scenarios (running Algorithm A and Algorithm K).
 
@@ -331,7 +349,7 @@ Let $p_A$ denote the success rate of Implementation A, and let $p_L$ denote the 
 
 2. **Alternative Hypothesis (H1):** Implementation A has a lower success rate than Implementation L. Formally, $p_A < p_L$.
 
-##### Load Data for Hypothesis 2:
+##### Load Data for testing hypothesis 2:
 
 
 ```python
@@ -350,7 +368,6 @@ path_dataA = os.path.join(current_dir, 'data', 'ImplementationA', 'execution_tim
 exec_timesA = numpy.loadtxt(path_dataA, delimiter=',', skiprows=1)
 
 print("Exec Times A: ", exec_timesA)
-
 ```
 
     Exec Times L:  [90 41 90 42 90 62 36 33 37 90 37 37 42 90 37 45 37 51 90 90 90 35 35 59
@@ -401,7 +418,7 @@ plt.legend(loc='upper right')
 # Display the graph
 plt.show()
 
-# Boxplot for comparison
+# Using a Boxplot for comparison!
 plt.boxplot([exec_timesL, exec_timesA], labels=['Implementation L', 'Implementation A'])
 plt.title('Boxplot: Execution Times Comparison')
 plt.ylabel('Execution time')
@@ -411,17 +428,17 @@ plt.show()
 
 
     
-![png](README_files/README_23_0.png)
+![png](README_files/README_26_0.png)
     
 
 
 
     
-![png](README_files/README_23_1.png)
+![png](README_files/README_26_1.png)
     
 
 
-
+A boxplot used here provides a quick and visually intuitive way to compare the distributions of the times across the two implementations A and L.
 
 #### Binomial Assumption Check:
 
@@ -447,7 +464,25 @@ else:
     Binomial assumption holds for algorithm L.
 
 
-## Testing the second hypothesis:
+### Testing the second hypothesis:
+
+#### Standard Procedure for Proportions Z-test:
+
+1. Define the null hypothesis ($H_0$) as there being no difference in the success rates between implementations A and L. The alternative hypothesis ($H_A$) states that the success rate for implementation A is less than that for implementation L.
+
+2. Count the number of successful outcomes (execution times below 90 seconds) for each implementation, denoted as $X_A$ and $X_L$ for implementations A and L, respectively.
+
+3. Calculate the proportions of success ($\hat{p}_A$ and $\hat{p}_L$) for both implementations A and L by dividing the number of successful outcomes by the total number of outcomes (n).
+
+4. Calculate the pooled proportion ($\hat{p}$). This is the proportion of successful outcomes across both implementations. It's given by the formula: $\hat{p} = \frac{X_A + X_L}{2n}$.
+
+5. Compute the Z statistic using the formula: $Z = \frac{\hat{p}_A - \hat{p}_L}{\sqrt{\hat{p}(1-\hat{p})(\frac{1}{n}+\frac{1}{n})}}$.
+
+6. Calculate the p-value using the standard normal (Z) distribution. Because the alternative hypothesis states that the success rate for implementation A is less than that for implementation L, a one-tailed test is performed.
+
+7. Compare the calculated p-value with the significance level (α = 0.05). If the p-value is less than or equal to α, reject the null hypothesis, providing evidence for the alternative hypothesis.
+
+Again, most of this work was made easy by using the scipy library in python. The function `proportions_ztest()` from the statsmodels library was used to perform the proportions Z-test. The function returns the Z-statistic and the p-value.
 
 
 ```python
@@ -486,7 +521,7 @@ Given the very small p-value, we reject the null hypothesis in favor of the alte
 success_rate_L = len(exec_timesL[exec_timesL < 90]) / len(exec_timesL)
 success_rate_A = len(exec_timesA[exec_timesA < 90]) / len(exec_timesA)
 
-# Plot success rates
+# Plot success rates - easy visual comparison
 plt.bar(['Implementation L', 'Implementation A'], [success_rate_L, success_rate_A])
 plt.ylabel('Success Rate')
 plt.title('Success Rates of Implementations L and A')
@@ -495,7 +530,7 @@ plt.show()
 
 
     
-![png](README_files/README_30_0.png)
+![png](README_files/README_34_0.png)
     
 
 
