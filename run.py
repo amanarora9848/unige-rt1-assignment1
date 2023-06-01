@@ -26,7 +26,7 @@ def handler(signum, frame):
 
 # Set the signal handler and a 5-minute alarm
 signal.signal(signal.SIGALRM, handler)
-signal.alarm(120)  # 150 seconds
+signal.alarm(120)  # 120 seconds
 
 robot_scripts = args.robot_scripts
 prompt = "Enter the names of the Python files to run, separated by commas: "

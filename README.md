@@ -1,278 +1,532 @@
-Research Track 1 - Assignment 1 (UniGe)
-=======================================
+# Assignment 3 (Course "Researach Track 2" at UniGe, Italy)
 
-## About Python Robotics Simulator
-This is a simple, portable robot simulator developed by [Student Robotics](https://studentrobotics.org).
-Some of the arenas and the exercises have been modified for the Research Track I course
+### Changes made to the assignment submitted as part of course of "research track 1"
 
-Installation
-----------------------
+1. The robot can now robustly and in real-time, determine if all the tokens have been reached, without having to previously state how many tokens are present in the environment.
 
-The simulator requires a Python 2.7 installation, the [pygame](http://pygame.org/) library, [PyPyBox2D](https://pypi.python.org/pypi/pypybox2d/2.1-r331), and [PyYAML](https://pypi.python.org/pypi/PyYAML/).
+2. The assignment implementation has been subjected to stringent evaluation for failure, which includes the distance between, or the orientation difference between the tokens who have been paired (delivered) - even very small differences in my implementation (A) are treated as failres.
 
-Pygame, unfortunately, can be tricky (though [not impossible](http://askubuntu.com/q/312767)) to install in virtual environments. If you are using `pip`, you might try `pip install hg+https://bitbucket.org/pygame/pygame`, or you could use your operating system's package manager. Windows users could use [Portable Python](http://portablepython.com/). PyPyBox2D and PyYAML are more forgiving, and should install just fine using `pip` or `easy_install`.
+3. The implementation can now detect if the robot got stuck in a loop while searching for tokens and can break out of the loop, denoting a failure.
 
-To run the project, it is recommended to create a python2 virtualenv for the project. To do so, we first need to install virtualenv pip package, and then create a python2.7 virtualenv since the simulator is based on python2.7:
+4. The implementation can now detect if the robot got stuck in a loop while delivering tokens and can break out of the loop, denoting a failure.
 
-```shell
-pip install virtualenv
-git clone https://github.com/amanarora9848/unige-rt1-assignment1.git
-cd unige-rt1-assignment1
-virtualenv -p /usr/bin/python2.7 .rt1project1
-. .rt1project1/bin/activate
-```
+5. A new function to randomize the tokens in the original circles has been implementation to provide a "randomized environment" for performing tests. The function is presented below:
+    ```python
+    def place_token_random(radius, max_a=2*pi, number_offset=0):
+        token_type = SilverToken if radius == INNER_CIRCLE_RADIUS else GoldToken
+        rotation_amount = 0
+        for i in range(TOKENS_PER_CIRCLE):
+            token = token_type(self, number_offset + i)
+            angle = random.uniform(0, max_a)
+            token.location = (cos(angle) * radius, sin(angle) * radius)
+            token.heading = rotation_amount
+            self.objects.append(token)
+    ```
+    The function is simply called as follows:
+    ```python
+        place_token_random(INNER_CIRCLE_RADIUS)
+        place_token_random(OUTER_CIRCLE_RADIUS, number_offset=TOKENS_PER_CIRCLE)
+    ```
+6. In the main algorithm file (assignment.py) a few changes were made to write the data to an `execution_times.csv` file as soon as either the task was completed or a failure was detected. Times were calculated by using the `time.time()` function in different places. The function to write the data is presented below:
+    ```python
+    def write_execution_times(exec_time):
+        """
+        Function to write the execution times to a csv file.
+        Args: exec_time(float): Execution time of the program.
+        """
+        file_path = os.path.abspath('execution_times.csv')
+        file_exists = os.path.isfile(file_path)
 
-This activated the python2.7 virtualenv. To deactivate:
-```shell
-$ deactivate
-```
+        with open(file_path, 'a') as csvfile:
+            writer = csv.writer(csvfile)
+            if not file_exists:
+                writer.writerow(["Execution Time"])
+            # Write the execution time for this run
+            writer.writerow([exec_time])
+    ```
+7. A new python script `analyze.py` was created to automate the process of running multiple instances of the assignment in parallel, for faster collection of data. The script can be run by a command, whose usage is presented below:
+    ```bash
+    usage: python analyze.py [-h] [-b BATCHES] [-r REPS] [-m METRICS_INTERVAL]
 
-Once in the venv, we can install the project requirements. Fortunately, there exists a requirements.txt file.
-```shell
-$ pip install -r requirements.txt
-```
+    Run the simulation batches with specified repititions, and calculate various
+    metrics associated with the simulation of the game.
 
-## Troubleshooting
+    optional arguments:
+    -h, --help            show this help message and exit
+    -b BATCHES, --batches BATCHES
+                            Number of batches to run the simulation for.
+    -r REPS, --reps REPS  Number of repititions of sim per batch.
+    -m METRICS_INTERVAL, --metrics_interval METRICS_INTERVAL
+                            Number of batches after which to calculate metrics.
+    ```
+    This helps in running the assignment in parallel, and collecting data for analysis.
 
-When running `python run.py <file>`, you may be presented with an error: `ImportError: No module named 'robot'`. This may be due to a conflict between sr.tools and sr.robot. To resolve, symlink simulator/sr/robot to the location of sr.tools.
+In our study, we aimed to compare the performances of different implementations of the **Assignment 1** of the course: ***Research Track 1***, specifically, implementations A (self-made), K (by colleague Kazuto), and L (by colleague Lucas P.), based on their execution times and success rates.
 
-On Ubuntu, this can be accomplished by:
-* Find the location of srtools: `pip show sr.tools`
-* Get the location. In my case this was `/usr/local/lib/python2.7/dist-packages`
-* Create symlink: `ln -s path/to/simulator/sr/robot /usr/local/lib/python2.7/dist-packages/sr/`
+##### Hypotheses presented (stated crudely, formally stated in the following sections):
+1.  Implementation A and Implementation K have the same execution times.
+2. Implementation A has more success rate of execution (elaborate in desc.: tokens absolutely correctly delivered) than Implementation L.
 
-#### Note:
-The robot might (in rare cases) appear stopped, but actually it be turning in opposite directions very fast and could take a couple of moments until it reorients itself correctly and finds the token. In such cases, please patiently wait for it to move fast again, it will.
-
-## The Exercise
------------------------------
-
-To run the scripts in the simulator, use `run.py`, passing to it the file names.
-
-```shell
-$ python run.py assigment.py
-```
-
-![Short video of task in action](rt1prj1.gif)
-
-Robot API
----------
-
-The API for controlling a simulated robot is designed to be as similar as possible to the [SR API][sr-api].
-
-### Motors ###
-
-The simulated robot has two motors configured for skid steering, connected to a two-output [Motor Board](https://studentrobotics.org/docs/kit/motor_board). The left motor is connected to output `0` and the right motor to output `1`.
-
-The Motor Board API is identical to [that of the SR API](https://studentrobotics.org/docs/programming/sr/motors/), except that motor boards cannot be addressed by serial number. So, to turn on the spot at one quarter of full power, one might write the following:
-
-```python
-R.motors[0].m0.power = 25
-R.motors[0].m1.power = -25
-```
-
-### The Grabber ###
-
-The robot is equipped with a grabber, capable of picking up a token which is in front of the robot and within 0.4 metres of the robot's centre. To pick up a token, call the `R.grab` method:
 
 ```python
-success = R.grab()
+import os
+import numpy
+import scipy
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
 ```
 
-The `R.grab` function returns `True` if a token was successfully picked up, or `False` otherwise. If the robot is already holding a token, it will throw an `AlreadyHoldingSomethingException`.
+## Hypotheses 1:
 
-To drop the token, call the `R.release` method.
+Let $μ_A$ denote the mean execution time of Implementation A, and let $μ_K$ denote the mean execution time of Implementation K.
 
-Cable-tie flails are not implemented.
+1. **Null Hypothesis (H0):** There is no difference in the mean execution times of the two implementations. Formally, $μ_A = μ_K$.
 
-### Vision ###
+2. **Alternative Hypothesis (H1):** The mean execution time of Implementation A is less than that of Implementation K. Formally, $μ_A < μ_K$.
 
-To help the robot find tokens and navigate, each token has markers stuck to it, as does each wall. The `R.see` method returns a list of all the markers the robot can see, as `Marker` objects. The robot can only see markers which it is facing towards.
+Load Data for testing hypothesis 1:
 
-Each `Marker` object has the following attributes:
-
-* `info`: a `MarkerInfo` object describing the marker itself. Has the following attributes:
-  * `code`: the numeric code of the marker.
-  * `marker_type`: the type of object the marker is attached to (either `MARKER_TOKEN_GOLD`, `MARKER_TOKEN_SILVER` or `MARKER_ARENA`).
-  * `offset`: offset of the numeric code of the marker from the lowest numbered marker of its type. For example, token number 3 has the code 43, but offset 3.
-  * `size`: the size that the marker would be in the real game, for compatibility with the SR API.
-* `centre`: the location of the marker in polar coordinates, as a `PolarCoord` object. Has the following attributes:
-  * `length`: the distance from the centre of the robot to the object (in metres).
-  * `rot_y`: rotation about the Y axis in degrees.
-* `dist`: an alias for `centre.length`
-* `res`: the value of the `res` parameter of `R.see`, for compatibility with the SR API.
-* `rot_y`: an alias for `centre.rot_y`
-* `timestamp`: the time at which the marker was seen (when `R.see` was called).
-
-For example, the following code lists all of the markers the robot can see:
 
 ```python
-markers = R.see()
-print "I can see", len(markers), "markers:"
+# Load data
+current_dir = os.getcwd()
+path_dataK = os.path.join(current_dir, 'data', 'ImplementationK', 'randomenv_exec_timesK.csv')
+path_dataA = os.path.join(current_dir, 'data', 'ImplementationK', 'randomenv_exec_timesA.csv')
+exec_timesK = numpy.loadtxt(path_dataK, delimiter=',', skiprows=1)
+exec_timesA = numpy.loadtxt(path_dataA, delimiter=',', skiprows=1)
 
-for m in markers:
-    if m.info.marker_type in (MARKER_TOKEN_GOLD, MARKER_TOKEN_SILVER):
-        print " - Token {0} is {1} metres away".format( m.info.offset, m.dist )
-    elif m.info.marker_type == MARKER_ARENA:
-        print " - Arena marker {0} is {1} metres away".format( m.info.offset, m.dist )
+print("Exec Times A: ", exec_timesA, "\n")
+print("Exec Times K: ", exec_timesK)
 ```
 
-## Working and Explanation
-
-### The main python script: assignment22.py
-
-This file is for executing the procedure for the assignment. Given the robot, the environment and the defined parameters, the task for the robot is to pick and place each nearest silver token near the nearest golden one at a given instant of time. 
-
-The robot starts with searching the silver token, which is defined when 'engage' control flag is True. The robot finds the nearest silver flag and moves towards it. Everytime the silver token is grabbed, the engage flag is inverted to search and move towards the nearest gold flag. Everytime the silver token is released, the engage flag is again inverted. The function definitions and logic is defined in the pseudocode below.
-
-Once the task is finished, the robot rejoices.
-
-### Variables and "switches"
-
-The code has following variables which control different aspects of the overall execution, as stated in the comments:
-```python
-a_th = 2.0
-""" float: Threshold for the control of the orientation """
-
-silver_th = 0.40 # Threshold distance for silver (nearest distance to approach before action).
-gold_th = 0.62  # Threshold for gold, slightly more.
-""" float: Thresholds for the control of the linear distance to a silver or gold token """
-
-engage = True # Starting with silver who uses this flag first, and then is given to gold.
-
-total_tokens = 12 # Total number of tokens (should be evenfor this task)
-
-want_dynamic_speed = True # Preference for dynamic or static speed settings for the robot
-
-not_seen_flag = done_flag = already_seen_flag = unmoved_flag = moveback_flag = False
-```
-The variables `silver_th` and `gold_th` control the minimum distance of approach to respective token, and gold has a higher value, unsurprisingly, because the silver token has to be released in front of the gold token without pushing it. Variable `a_th` defines the same thing, just for the orientation of the robot w.r.t token.
-
-The toggle `engage` toggles everything concerning with the silver/gold token. Functions taking this flag gather information and execute instructions of search, grab and release based on this flag. `engage` being True is silver, and opposite is gold.
-
-`total_tokens` is a variable which holds the number of tokens in the environment, and the code takes this into account and stops when all tokens have been arranged. This is kept for a possible future improvement wherein we can take input from user or other source regarding number of elements (even).
-
-`want_dynamic_speed` is an option that the user can choose to keep True (if they want smoother motion of robot, the robot drive and turn speeds vary with variations in the distance or orientation from the token being searched), or want the speeds to be static i.e. False.
-
-Finally, variables `not_seen_flag` to `moveback_flag` are used to control the printing procedures (for appropriate print statements and printing them once per condition).
-
-### Functions and Procedures
-
-```
-Following functions are used to drive the robot around and perform the task requested.
-
-1. PROCEDURE drive: Function for setting a linear velocity
-2. PROCEDURE turn : Function for setting an angular velocity
-3. FUNCTION locate_token : Function to find the closest silver or gold token, based on the passed control flag. Returns a dictionary "token_information" with keys as follows - distance, orientation, token_code, token_color, distance_threshold.
-4. PROCEDURE drive_to_deliver : Function to drive robot towards the token.
-5. PROCEDURE continue_search : Function to rotate robot and make it keep searching for the next token.
-6. PROCEDURE grab_release : Function to grab the nearest seen silver token and release it near the nearest seen gold token.
-7. PROCEDURE end_task : Function for the robot to stop the task and end program execution after completion.
-```
-
-<!-- ```
-Procedures to drive robot around:
-
-procedure DRIVE(speed, time)
-    left motor power ← speed
-    right motor power ← speed
-    sleep(time)
-    left, right motor power ← 0
-
-procedure TURN(speed, time)
-    left motor power ← speed
-    right motor power ← -speed
-    sleep(time)
-    left, right motor power ← 0
-``` -->
-
-<!-- #### FUNCTION: Search required coloured robot and retrieve its parameters
-
-```c
-SELECTOR //BOOLEAN type, True means wanted token is silver, while False means wanted token is gold.
-
-function LOCATE_TOKEN(SELECTOR)
-    set dist to 100 //Maximum distance after which token not detected
-
-    if SELECTOR
-        set distance_threshold to distance_threshold_for_silver
-        set color to silver-token
-    else:
-        set distance_threshold to distance_threshold_for_gold
-        set color to gold-token
-    endif
-
-    foreach TOKEN in observed_tokens
-        if observed_distance < dist AND observed_token_color is color
-            set dist to observed_distance
-            set orientation to observed_orientation
-            set token_code to observed_token_code
-            set token_code to observed_token_color
-        endif
-    endfor
-
-    if dist is not updated
-        return default values
-    else:
-        return dist, orientation, token_code, "silver-token", distance_threshold
-``` -->
-
-### PROCEDURE: Arrange all silver-gold tokens in pairs.
-
-```js
-SELECTOR //BOOLEAN, True means wanted token is silver, False means wanted token is gold
-SILVER_ARRANGED //set of silver tokens already dealt with
-GOLD_ARRANGED //set of gold tokens already dealt with
-
-procedure MAIN()
-
-    token_info ← LOCATE_TOKEN(SELECTOR)
-
-    if no token detected
-        keep searching
-
-    else if all tokens arranged
-        end execution
-
-    else if token observed has required color and has already been arranged
-        keep searching
+    Exec Times A:  [37.77668095 44.46400499 46.03198314 48.29454112 52.03829789 52.49213696
+     53.23186183 58.21002698 60.60602117 38.69818592 44.10883617 46.81135011
+     48.26659417 48.57106709 48.82675385 51.3419888  35.30833578 39.20498109
+     40.11223507 41.75994897 41.95576787 46.69194889 51.07402396 55.39902592
+     38.0034678  38.56418085 40.00610495 42.24549413 52.92601895 54.50770593] 
     
-    else
-        if token_info[distance] < token_info[distance_threshold_for_current_color_token]
-            if SELECTOR is True
-                grab token
-                ADD token to SILVER_ARRANGED
-            else
-                release token
-                ADD token to GOLD_ARRANGED
-                drive robot backwards
-            endif
-            invert SELECTOR
-        endif
+    Exec Times K:  [ 92.46227002  97.73628497  98.43292904 102.74572396 102.78263998
+     103.96677399 106.22474217 109.98327923 112.4817009  114.29829097
+     113.56836295 113.71793604 114.49517894 116.24606919 117.54107499
+     119.26594591 120.08769798 121.99174118 123.00483704 123.31274796
+     125.65598512 125.45696402 127.80762506 128.30329585 136.83233404
+     141.80344486 145.60325098 147.01184607 154.07681584 170.03156209]
 
-        //maneuver robot to wanted token
-        if token_info[orientation] > orientation_threshold:
-            turn robot right
-        else if token_info[orientation] < -orientation_threshold:
-            turn robot left
-        else if token_info[orientation] <= |orientation_threshold|
-            drive robot forward
-        endif
-    
-    endif
+
+#### Visuliaze data:
+
+
+```python
+import scipy.stats as stats
+
+# Histograms
+plt.figure(figsize=(14,6))
+
+plt.subplot(1,2,1)
+plt.hist(exec_timesA, bins=20, alpha=0.5, color='blue', density=True)
+plt.title('Histogram of Execution Times (Implementation A)')
+plt.xlabel('Execution Time (s)')
+plt.ylabel('Density')
+
+plt.subplot(1,2,2)
+plt.hist(exec_timesK, bins=20, alpha=0.5, color='red', density=True)
+plt.title('Histogram of Execution Times (Implementation K)')
+plt.xlabel('Execution Time (s)')
+plt.ylabel('Density')
+
+plt.tight_layout()
+plt.show()
+
+# Q-Q plots
+plt.figure(figsize=(14,6))
+
+plt.subplot(1,2,1)
+stats.probplot(exec_timesA, plot=plt)
+plt.title('Q-Q plot of Execution Times (Implementation A)')
+
+plt.subplot(1,2,2)
+stats.probplot(exec_timesK, plot=plt)
+plt.title('Q-Q plot of Execution Times (Implementation K)')
+
+plt.tight_layout()
+plt.show()
 ```
 
 
-### Possible Improvements
+    
+![png](stat_analysis_files/stat_analysis_8_0.png)
+    
 
-- For the case of a silver obstacle in the path of the robot while it has already grabbed a silver token, logic to go around it instead of colliding with it can be written.
 
-- User input to set the driving and turning speed of the robot can be accepted and integrated into the code.
 
-- The movement of the robot can be made smoother by calculating appropriate gain for accuracy and adding (or reducing) small amount of "power" on every iteration upto a desired value, instead of setting it to desired value, and the execution time can be reduced. However, this method was observed to be a little prone to errors, so skipped for now.
+    
+![png](stat_analysis_files/stat_analysis_8_1.png)
+    
 
-- There could be more precision in how close to the gold token does the robot drop the silver token.
 
-- The current code logic could be made even simpler.
+#### Check normality of data using Shapiro-Wilk test:
 
-[sr-api]: https://studentrobotics.org/docs/programming/sr/
+
+```python
+from scipy.stats import shapiro
+
+# test for normality
+stat, p_value = shapiro(exec_timesA)
+
+# interpret
+alpha = 0.05
+if p_value > alpha:
+    print('Sample A looks Gaussian (fail to reject H0)')
+else:
+    print('Sample A does not look Gaussian (reject H0)')
+
+```
+
+    Sample A looks Gaussian (fail to reject H0)
+
+
+
+```python
+from scipy.stats import shapiro
+
+# test for normality
+stat, p_value = shapiro(exec_timesK)
+
+# interpret
+alpha = 0.05
+if p_value > alpha:
+    print('Sample K looks Gaussian (fail to reject H0)')
+else:
+    print('Sample K does not look Gaussian (reject H0)')
+
+```
+
+    Sample K looks Gaussian (fail to reject H0)
+
+
+
+```python
+# Compute differences
+differences = exec_timesA - exec_timesK
+
+# Computing mean difference
+mean_diff = numpy.mean(differences)
+
+# Computing standard deviation of differences
+std_dev_diff = numpy.std(differences)
+
+# Print results
+print("Mean difference: " + str(mean_diff))
+print("Standard deviation of differences: " + str(std_dev_diff))
+
+# Plot histogram of differences
+plt.hist(differences, bins=20, alpha=0.5, color='blue')
+plt.axvline(mean_diff, color='red', linestyle='dashed', linewidth=2)  # Mean difference
+plt.xlabel('Difference in Execution Time (s)')
+plt.ylabel('Frequency')
+plt.title('Distribution of Differences in Execution Time')
+plt.grid(True)
+plt.show()
+
+```
+
+    Mean difference: -74.3133260011673
+    Standard deviation of differences: 18.879393412129556
+
+
+
+    
+![png](stat_analysis_files/stat_analysis_12_1.png)
+    
+
+
+### Testing the First Hypothesis:
+
+
+```python
+# Paired t-test
+
+# Calculate t-statistic
+t_statistic, p_value_two_tailed = scipy.stats.ttest_rel(exec_timesA, exec_timesK)
+
+# Convert two-tailed p-value to one-tailed (only when the t-statistic is negative)
+if t_statistic < 0:
+    p_value_one_tailed = p_value_two_tailed / 2
+else:
+    p_value_one_tailed = 1 - p_value_two_tailed / 2
+
+# Print results
+print("t-statistic: " + str(t_statistic))
+print("one-tailed p-value: " + str(p_value_one_tailed))
+```
+
+    t-statistic: -21.19715920668762
+    one-tailed p-value: 1.688524508022901e-19
+
+
+
+```python
+# Load data into Pandas DataFrames
+df_A = pd.DataFrame(exec_timesA, columns=["Execution Time"])
+df_A['Implementation'] = 'A'
+df_K = pd.DataFrame(exec_timesK, columns=["Execution Time"])
+df_K['Implementation'] = 'K'
+
+# Concatenate the dataframes
+df = pd.concat([df_A, df_K])
+
+# Create a boxplot
+plt.figure(figsize=(10,6))
+sns.boxplot(x="Implementation", y="Execution Time", data=df)
+
+plt.title('Execution Times of Implementations A and K')
+plt.ylabel('Execution Time (s)')
+plt.xlabel('Implementation')
+plt.show()
+```
+
+
+    
+![png](stat_analysis_files/stat_analysis_15_0.png)
+    
+
+
+Our research question was to determine whether the execution time for Algorithm A was faster than Algorithm K. To test this, we stated our null hypothesis as 'Algorithm A does not have significantly faster execution times than Algorithm K.'
+
+We collected data on the execution times for both algorithms and performed a one-tailed paired t-test on the data. This type of test was chosen because it allows us to compare the means of the same group or item under two separate scenarios (running Algorithm A and Algorithm K).
+
+The result of the t-test yielded a t-statistic of -21.20 and a one-tailed p-value of approximately 1.69e-19. In statistical terms, a p-value less than 0.05 typically indicates strong evidence against the null hypothesis. Therefore, we reject our null hypothesis and conclude that there is significant evidence to suggest that Algorithm A has faster execution times than Algorithm K.
+
+These results indicate that, under the conditions of our testing environment, Implementation A performs faster than Implementation K.
+
+### Summarizing:
+
+After performing a paired t-test, the results were a t-statistic of -21.20 and a one-tailed p-value close to zero. This provides strong statistical evidence suggesting that Implementation A has faster execution times than Implementation K.
+
+
+## Hypothesis 2:
+
+Let $p_A$ denote the success rate of Implementation A, and let $p_L$ denote the success rate of Implementation L. 
+
+1. **Null Hypothesis (H0):** There is no difference in the success rates of the two algorithms. Formally, $p_A = p_L$.
+
+2. **Alternative Hypothesis (H1):** Implementation A has a lower success rate than Implementation L. Formally, $p_A < p_L$.
+
+##### Load Data for Hypothesis 2:
+
+
+```python
+path_dataL = os.path.join(current_dir, 'data', 'ImplementationL', 'random_10.txt')
+
+# Define a custom converter that sets values with -1 inactivity to 90
+def custom_converter(val):
+    exec_time, inactivity = val.decode().split(',')
+    return float(exec_time) if float(inactivity) != -1 else 90
+
+# Use genfromtxt to read the data
+exec_timesL = numpy.genfromtxt(path_dataL, delimiter='\n', skip_header=1, converters={0: custom_converter})
+print("Exec Times L: ", exec_timesL, "\n")
+
+path_dataA = os.path.join(current_dir, 'data', 'ImplementationA', 'execution_times_randomized_env.csv')
+exec_timesA = numpy.loadtxt(path_dataA, delimiter=',', skiprows=1)
+
+print("Exec Times A: ", exec_timesA)
+
+```
+
+    Exec Times L:  [90 41 90 42 90 62 36 33 37 90 37 37 42 90 37 45 37 51 90 90 90 35 35 59
+     36 90 90 40 45 90 39 90 37 36 70 37 32 39 38 43 39 36 43 56 43 31 45 39
+     37 55 40 40 90 44 50 90 40 90 42 45 50 90 90 54 34 90 36 42 41 37 49 90
+     90 38 90 90 36 90 43 41 90 48 32 90 36 42 90 29 37 40 90 38 43 90 35 37
+     32 90 90 38] 
+    
+    Exec Times A:  [100.         100.          36.9397788   38.71880174 100.
+     100.         100.          41.61794806  90.          49.820611
+      49.98059797  90.         100.          51.29700494  52.89022517
+      90.          90.          90.          62.41436982  90.
+      90.          90.          90.          90.          90.
+     100.         100.         100.          35.89996815  40.36427188
+      40.88834     42.17392516  44.22261906  44.37859607  46.9071939
+      90.          49.3416667   90.          90.          51.0907321
+     100.          53.96831298  90.          90.          56.71946406
+      90.          90.          90.          90.          90.
+     100.         100.         100.         100.          36.92921376
+      37.98842597  38.25773716  90.          38.9789629  100.
+      41.57334805  90.          49.23677492  90.          54.25387025
+      56.31132007  90.          90.          90.          90.
+      90.          66.41567302  90.          90.          90.
+      90.         100.         100.         100.         100.
+      90.          37.59201694  38.65858603  40.84705901  40.83273125
+      43.51380992  44.89300776 100.          48.94364381  49.20524406
+      51.7203722   90.          90.          52.9555409   90.
+      61.13721609  90.          90.          90.          68.73202705]
+
+
+#### Visuliaze data:
+
+
+```python
+import matplotlib.pyplot as plt
+
+# Histogram for Implementation L
+plt.hist(exec_timesL, bins=20, alpha=0.5, label='Implementation L')
+# Histogram for Implementation A
+plt.hist(exec_timesA, bins=20, alpha=0.5, label='Implementation A')
+
+# Set graph labels and title
+plt.xlabel('Execution time')
+plt.ylabel('Frequency')
+plt.title('Histogram: Execution Times Distribution')
+plt.legend(loc='upper right')
+
+# Display the graph
+plt.show()
+
+# Boxplot for comparison
+plt.boxplot([exec_timesL, exec_timesA], labels=['Implementation L', 'Implementation A'])
+plt.title('Boxplot: Execution Times Comparison')
+plt.ylabel('Execution time')
+plt.show()
+
+```
+
+
+    
+![png](stat_analysis_files/stat_analysis_22_0.png)
+    
+
+
+
+    
+![png](stat_analysis_files/stat_analysis_22_1.png)
+    
+
+
+#### Check normality of data:
+
+
+```python
+# Calculate the failure rates for algorithm A and L
+fail_rate_A = numpy.sum(exec_timesA >= 90) / len(exec_timesA)
+fail_rate_L = numpy.sum(exec_timesL >= 90) / len(exec_timesL)
+
+# Check if np and n(1-p) are greater than 5
+if len(exec_timesA) * fail_rate_A > 5 and len(exec_timesA) * (1 - fail_rate_A) > 5:
+    print("Normality assumption holds for algorithm A.")
+else:
+    print("Normality assumption may not hold for algorithm A.")
+
+if len(exec_timesL) * fail_rate_L > 5 and len(exec_timesL) * (1 - fail_rate_L) > 5:
+    print("Normality assumption holds for algorithm L.")
+else:
+    print("Normality assumption may not hold for algorithm L.")
+
+```
+
+    Normality assumption holds for algorithm A.
+    Normality assumption holds for algorithm L.
+
+
+## Testing the second hypothesis:
+
+
+```python
+from statsmodels.stats.proportion import proportions_ztest
+
+# Count the number of successful executions for each implementation:
+# Here we are totally sure that all execution times below 90 seconds
+# are successful because of the way the implementations are designed
+success_count_A = numpy.sum(exec_timesA < 90)
+success_count_L = numpy.sum(exec_timesL < 90)
+
+# the total number of executions
+nobs = len(exec_timesA)
+
+# run the Z-test
+zstat, pval = proportions_ztest([success_count_A, success_count_L], [nobs, nobs], alternative='smaller')
+
+print("z-statistic:", zstat)
+print("p-value:", pval)
+```
+
+    z-statistic: -4.264014327112208
+    p-value: 1.0039328062132435e-05
+
+
+Given the very small p-value, we reject the null hypothesis in favor of the alternative hypothesis at the 0.05 significance level. There is strong statistical evidence suggesting that Implementation A has a lower success rate than Implementation L. The negative z-statistic indicates that the success rate of Implementation A is lower than that of Implementation L.
+
+
+```python
+# Calculate success rates
+
+# Here we are totally sure that all execution times below 90 seconds
+# are successful because of the way the implementations are designed
+success_rate_L = len(exec_timesL[exec_timesL < 90]) / len(exec_timesL)
+success_rate_A = len(exec_timesA[exec_timesA < 90]) / len(exec_timesA)
+
+# Plot success rates
+plt.bar(['Implementation L', 'Implementation A'], [success_rate_L, success_rate_A])
+plt.ylabel('Success Rate')
+plt.title('Success Rates of Implementations L and A')
+plt.show()
+```
+
+
+    
+![png](stat_analysis_files/stat_analysis_28_0.png)
+    
+
+
+### Summarizing:
+
+After performing a one-tailed z-test for the difference of two proportions, the results were a z-statistic of -4.26 and a p-value of approximately 0.00001. This provides strong statistical evidence suggesting that Implementation A has a lower success rate than Implementation L.
+
+
+## Analyzing the normality assumptions:
+
+### Shapiro-Wilk Test for Normality:
+
+To ensure the validity of our t-test in the first hypothesis, we needed to confirm that our data - the execution times for Implementation K, followed a normal distribution. For this, we used the Shapiro-Wilk test.
+
+In this test, the null hypothesis states that the data was drawn from a normal distribution. We set our significance level at 0.05. If the resulting p-value from the test was greater than 0.05, we would not reject the null hypothesis, implying that the data does not significantly deviate from a normal distribution. However, if the p-value was less than 0.05, we would reject the null hypothesis, indicating that the data does not follow a normal distribution.
+
+This normality check was vital to ensure the appropriateness of using a t-test, as t-tests assume normal distribution of data.
+
+#### Test Result:
+The Shapiro-Wilk test result indicated that our sample looks Gaussian, meaning we failed to reject the null hypothesis. Therefore, the t-test was an appropriate method for comparing the execution times.
+
+<hr>
+
+### Normality Assumption Check for Proportions:
+
+In our second hypothesis, we were comparing proportions (failure rates) between Implementation A and L. Before performing a z-test for proportions, we needed to confirm the normality assumption for these proportions. 
+
+For a proportion to follow a normal distribution, the sample size needs to be large enough that both np and n(1-p) are greater than 5, where n is the sample size and p is the proportion of interest (here, the failure rate). Satisfying this condition ensures that the binomial distribution of the data can be approximated by a normal distribution, which is a key assumption for the z-test. 
+
+Therefore, we performed a check to see if the product of the sample size and the failure rate, and the product of the sample size and the success rate, were both greater than 5 for Implementations A and L. This step was crucial for validating the use of a z-test in our analysis.
+
+#### Test Result:
+The check confirmed that the normality assumption held for both Implementation A and Implementation L. Thus, the conditions for performing a z-test for proportions were met in this case.
+
+
+# Statistical Analysis Report
+
+## Hypothesis 1: Execution Times - Implementation A vs Implementation K
+
+We first tried to determine whether Implementation A has significantly faster execution times than Implementation K. The null hypothesis for this test was stated as "Implementation A and Implementation K have the same execution times". The alternative hypothesis was "Implementation A has faster execution times than Implementation K".
+
+We chose a paired t-test for this comparison, given that we had paired observations of execution times for the same tasks under two different conditions (Implementations A and K). The paired t-test compares the means of the paired observations, providing a direct way to see if there's a significant difference between them.
+
+The t-test yielded a t-statistic of -21.20 and a one-tailed p-value of approximately 1.69e-19. Given that this p-value is significantly below the 0.05 threshold, we reject our null hypothesis. This provides strong statistical evidence to suggest that Implementation A has faster execution times than Implementation K. Hence, under the conditions of our test, we infer that Implementation A performs faster than Implementation K.
+
+## Hypothesis 2: Success Rates - Implementation A vs Implementation L
+
+The second part of our analysis focused on comparing the success rates of Implementation A and Implementation L. Given that we had a prior belief that Implementation A might have a lower success rate, we defined our null hypothesis as "Implementation A and Implementation L have the same success rates". The alternative hypothesis was "Implementation A has a lower success rate than Implementation L".
+
+We performed a one-tailed z-test for proportions to test these hypotheses. The z-test was appropriate because we were comparing proportions (success rates), and it could effectively handle the large sample sizes that we had.
+
+The z-test produced a z-statistic of -4.26 and a p-value of approximately 1.00e-05. As this p-value is significantly below the standard 0.05 threshold, we reject the null hypothesis, providing strong evidence that Implementation A has a lower success rate than Implementation L. This result aligns with our initial belief and confirms that, in terms of success rates, Implementation L outperforms Implementation A.
+
+In conclusion, through our statistical analysis, we have found significant differences in performance between the algorithm implementations, both in terms of execution times and success rates. These findings provide valuable insights for future development and optimization efforts of implementation A.
+

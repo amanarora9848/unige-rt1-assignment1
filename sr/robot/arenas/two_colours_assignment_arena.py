@@ -1,6 +1,7 @@
 from __future__ import division
 
 from math import cos, pi, sin
+from numpy import random
 
 import pygame
 from pygame.rect import Rect
@@ -13,7 +14,7 @@ HOME_ZONE_SIZE = 2.5
 
 INNER_CIRCLE_RADIUS = 0.9
 OUTER_CIRCLE_RADIUS = 2.4  # Some tokens are at 1200ish, others at 1270ish
-TOKENS_PER_CIRCLE = 6 # default 6
+TOKENS_PER_CIRCLE = 6
 PEDESTAL_COLOR = (0x80, 0x80, 0x80)
 
 
@@ -68,9 +69,23 @@ class TwoColoursAssignmentArena(Arena):
                 token.heading = rotation_amount
                 self.objects.append(token)
 
-        place_token_circle(INNER_CIRCLE_RADIUS)
-        place_token_circle(OUTER_CIRCLE_RADIUS, number_offset=TOKENS_PER_CIRCLE,
-                           angle_offset=1.5 * pi, rotate_silvers=pi / 4)
+        def place_token_random(radius, max_a=2*pi, number_offset=0):
+            token_type = SilverToken if radius == INNER_CIRCLE_RADIUS else GoldToken
+            rotation_amount = 0
+            for i in range(TOKENS_PER_CIRCLE):
+                token = token_type(self, number_offset + i)
+                angle = random.uniform(0, max_a)
+                token.location = (cos(angle) * radius, sin(angle) * radius)
+                token.heading = rotation_amount
+                self.objects.append(token)
+
+
+        # place_token_circle(INNER_CIRCLE_RADIUS)
+        # place_token_circle(OUTER_CIRCLE_RADIUS, number_offset=TOKENS_PER_CIRCLE,
+        #                    angle_offset=1.5 * pi, rotate_silvers=pi / 4)
+
+        place_token_random(INNER_CIRCLE_RADIUS)
+        place_token_random(OUTER_CIRCLE_RADIUS, number_offset=TOKENS_PER_CIRCLE)
 
     def draw_background(self, surface, display):
 

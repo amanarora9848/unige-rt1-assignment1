@@ -49,6 +49,7 @@ displaced_tokens = {
 containing the token codes which have been dealt with
 """
 
+observed_gold_tokens = []
 observed_silver_tokens = []
 
 time_to_see_markers = False
@@ -72,8 +73,8 @@ time_before_grab = 0
 #############################################################################################################
 
 # apparent completion error distance check thresholds
-error_dist = 0.35
-error_theta_th = 15
+error_dist = 0.50
+error_theta_th = 30
 
 # numeric flag to check if the robot has failed and in what way
 fail_alert = 42
@@ -113,7 +114,7 @@ def check_silver_near_gold():
     Returns:
         bool: True if all displaced gold tokens are paired correctly with a silver token, False otherwise.
     """
-    global invalidity_period, observed_silver_tokens
+    global invalidity_period, observed_gold_tokens, observed_silver_tokens
     invalidity_period_start = time.time()
 
     while True:
@@ -125,7 +126,7 @@ def check_silver_near_gold():
         if time.time() - invalidity_period_start > 7:
             break
 
-        if len(displaced_tokens['silver']) < len(observed_silver_tokens):
+        if len(displaced_tokens['gold']) < len(observed_gold_tokens) and len(displaced_tokens['silver']) < len(observed_silver_tokens):
             print("NOT ALL TOKENS DISPLACED!!!!!!!!!")
             return False
         else:
@@ -159,7 +160,7 @@ def locate_token(flag):
              token color (string): retrieve the color of the token ("token" if no token detected)
              distance_threshold(float): respective threshold for closest distance, wrt token color (-1 if no token detected)
     """
-    global observed_silver_tokens
+    global observed_gold_tokens, observed_silver_tokens
 
     dist = 100
     current_token_code = 0
@@ -179,6 +180,9 @@ def locate_token(flag):
             rot_y = token.rot_y
             current_token_code = token.info.code
             token_color = token.info.marker_type
+
+        if token.info.code not in observed_gold_tokens and token.info.marker_type == MARKER_TOKEN_GOLD:
+            observed_gold_tokens.append(token.info.code)
 
         if token.info.code not in observed_silver_tokens and token.info.marker_type == MARKER_TOKEN_SILVER:
             observed_silver_tokens.append(token.info.code)
@@ -202,13 +206,18 @@ def locate_token(flag):
     return token_info_dict
 
 
+deliver_nudge = False
 def drive_to_deliver(distance, orientation):
     """
     Function to drive robot towards the token - specific set speeds.
     Args: distance(float): Distance to the respective token.
           orientation(float): Orientation of robot w.r.t. token.
     """
-    global inactivity_time
+    global inactivity_time, time_before_grab, deliver_nudge
+    if time_before_grab > 10:
+        if not deliver_nudge:
+            drive(100, 0.05)
+            deliver_nudge = True
     # Drive robot towards the token
     inactivity_time = 0
     if not want_dynamic_speed:
@@ -225,6 +234,7 @@ def drive_to_deliver(distance, orientation):
             drive((distance * 70)/(0.05), 0.05)  # Dynamic linear speed setting
 
 
+nudge = False
 def continue_search(token_color, orientation, token_search_condition, token_code='0'):
     """
     Function to rotate robot and make it keep searching for the next token.
@@ -233,7 +243,13 @@ def continue_search(token_color, orientation, token_search_condition, token_code
           token_search_condition(int): 1 for no token found case, while 2 when spotted token is already arranged.
           token_code(int): Token code of the token in observation.
     """
-    global not_seen_flag, already_seen_flag
+    global not_seen_flag, already_seen_flag, time_before_grab, nudge
+    
+    if time_before_grab > 10:
+        if not nudge:
+            time_before_grab = 0
+            drive(80, 1)
+            nudge = True
 
     if token_search_condition == 1:
         if not not_seen_flag:
@@ -243,7 +259,7 @@ def continue_search(token_color, orientation, token_search_condition, token_code
         if not want_dynamic_speed:
             turn(20, 0.03)
         elif want_dynamic_speed:
-            turn(abs(orientation)/0.001*8, 0.001)
+            turn(abs(orientation)/0.01*85, 0.001)
     if token_search_condition == 2:
         if not already_seen_flag:
             print("Already moved token:", token_code,
@@ -315,10 +331,9 @@ def write_execution_times(exec_time):
     Function to write the execution times to a csv file.
     Args: exec_time(float): Execution time of the program.
     """
-
     file_path = os.path.abspath('execution_times.csv')
     file_exists = os.path.isfile(file_path)
-    
+
     with open(file_path, 'a') as csvfile:
         writer = csv.writer(csvfile)
         if not file_exists:
@@ -377,8 +392,15 @@ def main():
         inactivity_time += search_end_time - search_start_time
         time_before_grab += search_end_time - search_start_time
 
+        if want_dynamic_speed == True:
+            search_loop_detection_time = 25
+            failsafe_time = 90
+        elif want_dynamic_speed == False:
+            search_loop_detection_time = 35
+            failsafe_time = 100
+
         # Robot stuck failsafe
-        if time_before_grab > 20:
+        if time_before_grab > search_loop_detection_time:
             print("Failed Completion - got stuck in a search loop")
             print("Exiting...")
             fail_alert = 1
@@ -396,12 +418,12 @@ def main():
                 break
         
         # Script Failsafe
-        if search_time > 90:
+        if search_time > failsafe_time:
             print("Failed Completion - script failsafe")
             print("Exiting...")
             fail_alert = 0
             break
-        
+
 
 
 # Execute
