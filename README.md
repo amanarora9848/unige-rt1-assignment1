@@ -67,6 +67,10 @@ In our study, we aimed to compare the performances of different implementations 
 1.  Implementation A and Implementation K have the same execution times.
 2. Implementation A has more success rate of execution (elaborate in desc.: tokens absolutely correctly delivered) than Implementation L.
 
+##### Data Collection:
+1. The data of **30** successful runs in randomized environment was collected for both implementations A and K, and the execution times were recorded in the files `data/ImplementationK/randomenv_exec_timesA.csv` and `data/ImplementationK/randomenv_exec_timesK.csv`.
+2. The data of **100** runs in randomized environment was collected for both implementations L and A, and the execution times were recorded in the files `data/ImplementationL/random_10.txt` and `data/ImplementationA/execution_times_randomized_env.csv`.
+
 
 ```python
 import os
@@ -155,13 +159,13 @@ plt.show()
 
 
     
-![png](stat_analysis_files/stat_analysis_8_0.png)
+![png](README_files/README_8_0.png)
     
 
 
 
     
-![png](stat_analysis_files/stat_analysis_8_1.png)
+![png](README_files/README_8_1.png)
     
 
 
@@ -237,7 +241,7 @@ plt.show()
 
 
     
-![png](stat_analysis_files/stat_analysis_12_1.png)
+![png](README_files/README_12_1.png)
     
 
 
@@ -288,13 +292,13 @@ plt.show()
 
 
     
-![png](stat_analysis_files/stat_analysis_15_0.png)
+![png](README_files/README_15_0.png)
     
 
 
 Our research question was to determine whether the execution time for Algorithm A was faster than Algorithm K. To test this, we stated our null hypothesis as 'Algorithm A does not have significantly faster execution times than Algorithm K.'
 
-We collected data on the execution times for both algorithms and performed a one-tailed paired t-test on the data. This type of test was chosen because it allows us to compare the means of the same group or item under two separate scenarios (running Algorithm A and Algorithm K).
+We collected data on the execution times for both algorithms on randomized arena with 6 tokens and performed a one-tailed paired t-test on the data. This type of test was chosen because it allows us to compare the means of the same group or item under two separate scenarios (running Algorithm A and Algorithm K).
 
 The result of the t-test yielded a t-statistic of -21.20 and a one-tailed p-value of approximately 1.69e-19. In statistical terms, a p-value less than 0.05 typically indicates strong evidence against the null hypothesis. Therefore, we reject our null hypothesis and conclude that there is significant evidence to suggest that Algorithm A has faster execution times than Algorithm K.
 
@@ -393,13 +397,13 @@ plt.show()
 
 
     
-![png](stat_analysis_files/stat_analysis_22_0.png)
+![png](README_files/README_22_0.png)
     
 
 
 
     
-![png](stat_analysis_files/stat_analysis_22_1.png)
+![png](README_files/README_22_1.png)
     
 
 
@@ -421,7 +425,6 @@ if len(exec_timesL) * fail_rate_L > 5 and len(exec_timesL) * (1 - fail_rate_L) >
     print("Normality assumption holds for algorithm L.")
 else:
     print("Normality assumption may not hold for algorithm L.")
-
 ```
 
     Normality assumption holds for algorithm A.
@@ -474,7 +477,7 @@ plt.show()
 
 
     
-![png](stat_analysis_files/stat_analysis_28_0.png)
+![png](README_files/README_28_0.png)
     
 
 
@@ -510,7 +513,7 @@ Therefore, we performed a check to see if the product of the sample size and the
 The check confirmed that the normality assumption held for both Implementation A and Implementation L. Thus, the conditions for performing a z-test for proportions were met in this case.
 
 
-# Statistical Analysis Report
+# Statistical Analysis Report (Summary)
 
 ## Hypothesis 1: Execution Times - Implementation A vs Implementation K
 
@@ -529,4 +532,6 @@ We performed a one-tailed z-test for proportions to test these hypotheses. The z
 The z-test produced a z-statistic of -4.26 and a p-value of approximately 1.00e-05. As this p-value is significantly below the standard 0.05 threshold, we reject the null hypothesis, providing strong evidence that Implementation A has a lower success rate than Implementation L. This result aligns with our initial belief and confirms that, in terms of success rates, Implementation L outperforms Implementation A.
 
 In conclusion, through our statistical analysis, we have found significant differences in performance between the algorithm implementations, both in terms of execution times and success rates. These findings provide valuable insights for future development and optimization efforts of implementation A.
+
+
 
