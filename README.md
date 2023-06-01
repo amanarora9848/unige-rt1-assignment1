@@ -63,8 +63,8 @@
 In our study, we aimed to compare the performances of different implementations of the **Assignment 1** of the course: ***Research Track 1***, specifically, implementations `A` (self-made), `K` (by a colleague [here](https://github.com/kazu610/3rd_assignment_RT2)), and `L` (by another colleague [here](https://github.com/Lucas-Pardo/RT2_Assignment_3)), based on their execution times and success rates. At a time, implementation A is either compared with K or L, for evaluating differnt results. The results are presented in the following sections.
 
 ##### Hypotheses presented (stated crudely, formally stated in the following sections):
-1. Implementation A and Implementation K have the same execution times.
-2. Implementation A has a lower success rate than Implementation L.
+1. Whether Implementation A and Implementation K have different execution times, specifically if Implementation A is faster.
+2. Whether Implementation A and Implementation L differ in their success rates, specifically if Implementation A has a lower success rate.
 
 ##### Data Collection:
 1. The data of **30** successful runs in randomized environment was collected for both implementations A and K after formulating the hypothesis 1, and the execution times were recorded in the files `data/ImplementationK/randomenv_exec_timesA.csv` and `data/ImplementationK/randomenv_exec_timesK.csv`.
