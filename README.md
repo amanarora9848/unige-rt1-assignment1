@@ -169,6 +169,10 @@ plt.show()
     
 
 
+A nice thing to notice here is the use of the Q-Q plot, or "Quantile-Quantile" plot. It is a powerful tool to visualize the distribution of a sample of data by comparing it to a known distribution (theoretical distribution). The points in the plot are plotted in such a way that the points should form a straight line. If the points are not on a straight line, then the distribution of the sample data does not match the theoretical distribution - the normal distribution in our case. The Q-Q plot is a good way to see if the data is normally distributed or not.
+
+We can clearly notice that the blue points are roughly along the red line, which means that the data is normally distributed.
+
 #### Check normality of data using Shapiro-Wilk test:
 
 
@@ -211,6 +215,9 @@ else:
 
 
 ```python
+import matplotlib.pyplot as plt
+from scipy.stats import norm
+
 # Compute differences
 differences = exec_timesA - exec_timesK
 
@@ -225,8 +232,15 @@ print("Mean difference: " + str(mean_diff))
 print("Standard deviation of differences: " + str(std_dev_diff))
 
 # Plot histogram of differences
-plt.hist(differences, bins=20, alpha=0.5, color='blue')
+plt.hist(differences, bins=20, alpha=0.5, color='blue', density=True)
 plt.axvline(mean_diff, color='red', linestyle='dashed', linewidth=2)  # Mean difference
+
+# Plot the normal distribution fit
+xmin, xmax = plt.xlim()
+x = numpy.linspace(xmin, xmax, 100)
+p = norm.pdf(x, mean_diff, std_dev_diff)
+plt.plot(x, p, 'k', linewidth=2)
+
 plt.xlabel('Difference in Execution Time (s)')
 plt.ylabel('Frequency')
 plt.title('Distribution of Differences in Execution Time')
@@ -241,7 +255,7 @@ plt.show()
 
 
     
-![png](README_files/README_12_1.png)
+![png](README_files/README_13_1.png)
     
 
 
@@ -292,7 +306,7 @@ plt.show()
 
 
     
-![png](README_files/README_15_0.png)
+![png](README_files/README_16_0.png)
     
 
 
@@ -397,38 +411,40 @@ plt.show()
 
 
     
-![png](README_files/README_22_0.png)
+![png](README_files/README_23_0.png)
     
 
 
 
     
-![png](README_files/README_22_1.png)
+![png](README_files/README_23_1.png)
     
 
 
-#### Check normality of data:
+
+
+#### Binomial Assumption Check:
 
 
 ```python
-# Calculate the failure rates for algorithm A and L
-fail_rate_A = numpy.sum(exec_timesA >= 90) / len(exec_timesA)
-fail_rate_L = numpy.sum(exec_timesL >= 90) / len(exec_timesL)
+# Calculate the success rates for algorithm A and L
+success_rate_A = numpy.sum(exec_timesA < 90) / len(exec_timesA)
+success_rate_L = numpy.sum(exec_timesL < 90) / len(exec_timesL)
 
 # Check if np and n(1-p) are greater than 5
-if len(exec_timesA) * fail_rate_A > 5 and len(exec_timesA) * (1 - fail_rate_A) > 5:
-    print("Normality assumption holds for algorithm A.")
+if len(exec_timesA) * success_rate_A > 5 and len(exec_timesA) * (1 - success_rate_A) > 5:
+    print("Binomial assumption holds for algorithm A.")
 else:
-    print("Normality assumption may not hold for algorithm A.")
+    print("Binomial assumption may not hold for algorithm A.")
 
-if len(exec_timesL) * fail_rate_L > 5 and len(exec_timesL) * (1 - fail_rate_L) > 5:
-    print("Normality assumption holds for algorithm L.")
+if len(exec_timesL) * success_rate_L > 5 and len(exec_timesL) * (1 - success_rate_L) > 5:
+    print("Binomial assumption holds for algorithm L.")
 else:
-    print("Normality assumption may not hold for algorithm L.")
+    print("Binomial assumption may not hold for algorithm L.")
 ```
 
-    Normality assumption holds for algorithm A.
-    Normality assumption holds for algorithm L.
+    Binomial assumption holds for algorithm A.
+    Binomial assumption holds for algorithm L.
 
 
 ## Testing the second hypothesis:
@@ -477,7 +493,7 @@ plt.show()
 
 
     
-![png](README_files/README_28_0.png)
+![png](README_files/README_30_0.png)
     
 
 
@@ -501,17 +517,18 @@ The Shapiro-Wilk test result indicated that our sample looks Gaussian, meaning w
 
 <hr>
 
-### Normality Assumption Check for Proportions:
+### Binomial Assumption Check for Proportions:
 
-In our second hypothesis, we were comparing proportions (failure rates) between Implementation A and L. Before performing a z-test for proportions, we needed to confirm the normality assumption for these proportions. 
+In our second hypothesis, we were comparing success rates between Implementation A and L. Before performing a z-test for proportions, we needed to confirm the binomial assumption for these proportions.
 
-For a proportion to follow a normal distribution, the sample size needs to be large enough that both np and n(1-p) are greater than 5, where n is the sample size and p is the proportion of interest (here, the failure rate). Satisfying this condition ensures that the binomial distribution of the data can be approximated by a normal distribution, which is a key assumption for the z-test. 
+For a binomial distribution to approximate a normal distribution (**central limit theorem**), the sample size needs to be large enough that both np and n(1-p) are greater than 5, where n is the sample size and p is the proportion of interest (here, the success rate). Satisfying this condition ensures that the binomial distribution of the data can be approximated by a normal distribution, which is a key assumption for the z-test.
 
-Therefore, we performed a check to see if the product of the sample size and the failure rate, and the product of the sample size and the success rate, were both greater than 5 for Implementations A and L. This step was crucial for validating the use of a z-test in our analysis.
+Therefore, we performed a check to see if the product of the sample size and the success rate, and the product of the sample size and the failure rate, were both greater than 5 for Implementations A and L. This step was crucial for validating the use of a z-test in our analysis.
+
+For Implementation A, we found that both np and n(1-p) were greater than 5, suggesting that the binomial assumption holds. Similarly for Implementation L, both np and n(1-p) were greater than 5, validating the binomial assumption. Thus, the use of a z-test was appropriate for our analysis.
 
 #### Test Result:
-The check confirmed that the normality assumption held for both Implementation A and Implementation L. Thus, the conditions for performing a z-test for proportions were met in this case.
-
+We can conclude that the binomial assumption holds for both Implementations A and L. This validation confirms the appropriateness of the subsequent Z-test for comparing the success rates of these two implementations.
 
 # Statistical Analysis Report (Summary)
 
