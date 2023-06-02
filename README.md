@@ -265,7 +265,7 @@ plt.show()
 
 ### Testing the First Hypothesis:
 
-#### Standard Procedure for paired T-test:
+#### Standard Procedure for <u>paired T-test</u>:
 
 1. Define the null hypothesis ($H_0$) as there being no difference in the average execution times between implementations A and K. The alternative hypothesis ($H_A$) states that the average execution time for implementation A is less than that for implementation K.
 
@@ -470,7 +470,7 @@ else:
 
 ### Testing the second hypothesis:
 
-#### Standard Procedure for Proportions Z-test:
+#### Standard Procedure for <u>Proportions Z-test</u>:
 
 1. Define the null hypothesis ($H_0$) as there being no difference in the success rates between implementations A and L. The alternative hypothesis ($H_A$) states that the success rate for implementation A is less than that for implementation L.
 
@@ -499,7 +499,10 @@ As far as the validity of the test is concerned, it would suffice to state that 
 2. **Large sample size**: the sample size is 100, which is much greater than 30.
 3. **Normality**: sample size is large so central limit theorem applies (distribution of sample mean is approximately normal).
 4. **Independence**: the runs of each assignment are executed independently.
-5. **Known population variance**: for classic Z-test we'd assume to know the population variance, but in this case we don't. However, for proportions Z-test, instead, we compare the proportions of successes for the two implementations, and the formula for the Z statistic takes into account the observed proportions and the sample size, rather than requiring a known population variance.
+5. **Known population variance**: for classic Z-test we'd assume to know the population variance, but in this case we don't. For proportions Z-test, instead, we compare the proportions of successes for the two implementations, and the formula for the Z statistic takes into account the observed proportions and the sample size, rather than requiring a known population variance.
+6. **"Each population is at least 20 times as big as its sample"**: It is reasonable to assume that the population of all possible runs of the algorithm is much larger than 100 since the environment is randomized, and practically can be considered infinite.
+
+In my case, I dealt with  two binary outcomes (success or failure) from two algorithms, so the **Z-test for two proportions** was more directly applicable, also given that this gave me a sense of <i>directionality</i>. If instead I used the **Chi-Squared test**, it would yield the same conclusion because for a 2x2 contingency table, the square of the Z-score equals the Chi-square statistic.
 
 
 ```python
